@@ -1,0 +1,22 @@
+plugins {
+    id 'groovy'
+    id 'java-gradle-plugin'
+}
+group 'net.breadmoirai'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
+}
+
+gradlePlugin {
+    plugins.create('githubReleasePlugin') {
+        id = "net.breadmoirai.github-release"
+        implementationClass = "net.breadmoirai.GithubReleasePlugin"
+    }
+}
