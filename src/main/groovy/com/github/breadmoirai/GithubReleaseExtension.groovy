@@ -1,4 +1,4 @@
-package net.breadmoirai
+package com.github.breadmoirai
 
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.PropertyState

@@ -1,22 +1,42 @@
 plugins {
     id 'groovy'
     id 'java-gradle-plugin'
+    //id 'com.gradle.plugin-publish' version '0.9.7'
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
 }
-group 'net.breadmoirai'
-version '1.0-SNAPSHOT'
+
+group 'com.github.breadmoirai'
+version '0.1.0'
 
 repositories {
+    jcenter()
     mavenCentral()
+    maven { url = 'https://plugins.gradle.org/m2/' }
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.3.11'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
+    compile 'com.j256.simplemagic:simplemagic:1.10'
+    //compileOnly 'com.gradle.publish:plugin-publish-plugin:0.9.7'
 }
 
 gradlePlugin {
-    plugins.create('githubReleasePlugin') {
-        id = "net.breadmoirai.github-release"
-        implementationClass = "net.breadmoirai.GithubReleasePlugin"
+    plugins.create('github-release') {
+        id = 'com.github.breadmoirai.github-release'
+        implementationClass = 'com.github.breadmoirai.GithubReleasePlugin'
     }
 }
+
+//pluginBundle {
+//    website = 'https://github.com/BreadMoirai/github-release-gradle-plugin'
+//    vcsUrl = 'https://github.com/BreadMoirai/github-release-gradle-plugin'
+//    description = 'A Gradle Plugin to send Releases to Github '
+//    tags = ['github', 'release']
+//
+//    plugins.create('github-release') {
+//        id = 'net.breadmoirai.github-release'
+//        displayName = 'Github Release Plugin'
+//    }
+//}
+
+shadowJar.classifier = ''
