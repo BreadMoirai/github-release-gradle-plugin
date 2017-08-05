@@ -1,6 +1,8 @@
 package com.github.breadmoirai
 
 import com.j256.simplemagic.ContentInfoUtil
+import groovy.json.JsonBuilder
+import okhttp3.Headers
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -9,25 +11,28 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.impldep.com.google.gson.JsonObject
 import org.gradle.internal.impldep.com.google.gson.JsonParser
 
 class GithubReleaseTask extends DefaultTask {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8")
 
-    @Input
     final Provider<String> owner = project.property(String),
                            repo = project.property(String),
-                           token = project.token(String),
+                           token = project.property(String),
                            tagName = project.property(String),
                            targetCommitish = project.property(String),
                            releaseName = project.property(String),
                            body = project.property(String)
-    @Input
+
     final Provider<Boolean> draft = project.property(Boolean), prerelease = project.property(Boolean)
 
     final ConfigurableFileCollection releaseAssets = project.files()
+
+    GithubReleaseTask() {
+        this.setGroup('github')
+    }
 
     @TaskAction
     void publishRelease() {
@@ -37,59 +42,66 @@ class GithubReleaseTask extends DefaultTask {
         def tar = targetCommitish.getOrNull() ?: 'master'
         def rel = releaseName.getOrNull() ?: tag
         def bod = body.getOrNull() ?: ''
+        def group = project.group.toString()
+        def own = this.owner.getOrNull() ?:
+            group.substring(group.lastIndexOf('.') + 1)
+        def rep = this.repo.getOrNull() ?: project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
         boolean dra = draft.getOrNull() ?: false
         boolean pre = prerelease.getOrNull() ?: false
-
-        def json = $/
-                    {
-                      "tag_name": $tag,
-                      "target_commitish": $tar,
-                      "name": $rel,
-                      "body": $bod,
-                      "draft": $dra,
-                      "prerelease": $pre
-                    }
-                    /$
-        def requestBody = RequestBody.create(JSON, json)
+        def tok = this.token.getOrNull()
+        if (tok == null) throw new MissingPropertyException("Field 'token' is not set for githubRelease", 'token', String)
+        println "own = $own"
+        println "rep = $rep"
+        def jsonObject = new JsonObject()
+        jsonObject.with {
+            addProperty('tag_name', tag)
+            addProperty('target_commitish', tar)
+            addProperty('name', rel)
+            addProperty('body', bod)
+            addProperty('draft', dra)
+            addProperty('prerelease', pre)
+        }
+        def requestBody = RequestBody.create(JSON, jsonObject.toString())
 
         Request request = new Request.Builder()
-                .addHeader('Authorization', "token ${this.token.get()}")
-                .addHeader('User-Agent', "${this.owner.get()}.${this.repo.get()}")
-                .url("https://api.github.com/repos/${this.owner.get()}/${this.repo.get()}/releases")
+                .addHeader('Authorization', "token ${tok}")
+                .addHeader('User-Agent', "${own}.${rep}")
+                .url("https://api.github.com/repos/${own}/${rep}/releases")
                 .post(requestBody)
                 .build()
-
         def execute = client.newCall(request).execute()
-        println ':githubRelease ' + execute.headers()
-        def status = execute.headers().get("Status")
+        def headers = execute.headers()
+        def status = headers.get("Status")
         if (!status.startsWith('201')) {
+            if (status.startsWith('404')) {
+                throw new Error("404 Repository with Owner: '${own}' and Name: '${rep}' was not found")
+            }
             throw new Error(status)
         }
-        def responseJson = new JsonParser().parse(execute.body().charStream()).getAsJsonObject()
+        println ":githubRelease STATUS " + status.toUpperCase()
+         def responseJson = new JsonParser().parse(execute.body().charStream()).getAsJsonObject()
         def releaseId = responseJson.get("id").asInt
         println ":githubRelease URL ${responseJson.get("html_url")}"
         println ':githubRelease UPLOADING ASSETS'
         def util = new ContentInfoUtil()
-        this.releaseAssets.forEach { asset ->
+        this.releaseAssets.files.forEach { asset ->
+            println ':githubRelease UPLOADING ' + asset.name
             def info = util.findMatch(asset)
-            def type = MediaType.parse(info.getMimeType())
+            def type = MediaType.parse(info.mimeType)
             if (type == null)
                 println ':githubRelease UPLOAD FAILED\n\tMime Type could not be determined'
             def uploadUrl = responseJson.get("upload_url").asString
-            println uploadUrl
             def assetBody = RequestBody.create(type, asset)
 
             Request assetPost = new Request.Builder()
-                    .addHeader('Authorization', "token ${this.token.get()}")
-                    .addHeader('User-Agent', "${this.owner.get()}.${this.repo.get()}")
+                    .addHeader('Authorization', "token ${tok}")
+                    .addHeader('User-Agent', "${own}.${rep}")
                     .url(uploadUrl.replace('{?name,label}', "?name=$asset.name"))
                     .post(assetBody)
                     .build()
 
             def assetResponse = client.newCall(assetPost).execute()
-            println assetResponse.headers().get('Status')
         }
-
     }
 
     void setOwner(Provider<String> owner) {
@@ -164,7 +176,7 @@ class GithubReleaseTask extends DefaultTask {
         this.prerelease.set(prerelease)
     }
 
-    void setReleaseAssets(FileCollection releaseAssets) {
+    void setReleaseAssets(Object... releaseAssets) {
         this.releaseAssets.setFrom(releaseAssets)
     }
 

@@ -7,7 +7,7 @@ class GithubReleasePlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        def ext = project.extensions.create('githubRelease', GithubReleaseExtension)
+        def ext = project.extensions.create('githubRelease', GithubReleaseExtension, project)
 
         project.tasks.create('githubRelease', GithubReleaseTask) {
             it.with {
