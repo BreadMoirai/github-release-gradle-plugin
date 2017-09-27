@@ -31,7 +31,7 @@ class GithubReleaseTask extends DefaultTask {
     final ConfigurableFileCollection releaseAssets = project.files()
 
     GithubReleaseTask() {
-        this.setGroup('github')
+        this.setGroup('publishing')
     }
 
     @TaskAction
@@ -61,6 +61,7 @@ class GithubReleaseTask extends DefaultTask {
             addProperty('draft', dra)
             addProperty('prerelease', pre)
         }
+
         def requestBody = RequestBody.create(JSON, jsonObject.toString())
 
         Request request = new Request.Builder()
