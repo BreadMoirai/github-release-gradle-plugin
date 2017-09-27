@@ -15,7 +15,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.com.github.breadmoirai:github-release:0.1.1"
+    classpath "gradle.plugin.com.github.breadmoirai:github-release:1.0.0"
   }
 }
 
@@ -25,7 +25,7 @@ apply plugin: "com.github.breadmoirai.github-release"
 Build script snippet for new, incubating, plugin mechanism introduced in Gradle 2.1:
 ```groovy
 plugins {
-  id "com.github.breadmoirai.github-release" version "0.1.1"
+  id "com.github.breadmoirai.github-release" version "1.0.0"
 }
 ```
 
@@ -36,9 +36,9 @@ githubRelease {
     token = "your token" // required
     owner = "breadmoirai" // default is the last part of your group. Eg group: "com.github.breadmoirai" => owner: "breadmoirai"
     repo = "github-release" // by default this is set to your project name
-    tagName = "v0.1.1" // by default this is set to "v$project.version"
+    tagName = "v1.0.0" // by default this is set to "v$project.version"
     targetCommitish = "master" // by default this is set to "master"
-    releaseName = "v0.1.1" // by default this is the same as the tagName
+    releaseName = "v1.0.0" // by default this is the same as the tagName
     body = "Wham, bam! Thank you clam!" // by default this is empty
     draft = false // by default this is false
     prerelease = false // by default this is false
