@@ -1,7 +1,5 @@
 package com.github.breadmoirai
 
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import com.j256.simplemagic.ContentInfoUtil
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
@@ -11,6 +9,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskAction
+import org.json.JSONObject
 
 class GithubReleaseTask extends DefaultTask {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8")
@@ -41,22 +40,20 @@ class GithubReleaseTask extends DefaultTask {
         def bod = body.getOrNull() ?: ''
         def group = project.group.toString()
         def own = this.owner.getOrNull() ?:
-            group.substring(group.lastIndexOf('.') + 1)
+                group.substring(group.lastIndexOf('.') + 1)
         def rep = this.repo.getOrNull() ?: project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
         boolean dra = draft.getOrNull() ?: false
         boolean pre = prerelease.getOrNull() ?: false
         def tok = this.token.getOrNull()
         if (tok == null) throw new MissingPropertyException("Field 'token' is not set for githubRelease", 'token', String)
-        println "own = $own"
-        println "rep = $rep"
-        def jsonObject = new JsonObject()
+        def jsonObject = new JSONObject()
         jsonObject.with {
-            addProperty('tag_name', tag)
-            addProperty('target_commitish', tar)
-            addProperty('name', rel)
-            addProperty('body', bod)
-            addProperty('draft', dra)
-            addProperty('prerelease', pre)
+            put('tag_name', tag)
+            put('target_commitish', tar)
+            put('name', rel)
+            put('body', bod)
+            put('draft', dra)
+            put('prerelease', pre)
         }
 
         def requestBody = RequestBody.create(JSON, jsonObject.toString())
@@ -74,12 +71,11 @@ class GithubReleaseTask extends DefaultTask {
             if (status.startsWith('404')) {
                 throw new Error("404 Repository with Owner: '${own}' and Name: '${rep}' was not found")
             }
-            throw new Error(status)
+            throw new Error(status + '\n' + execute.toString())
         }
         println ":githubRelease STATUS " + status.toUpperCase()
-         def responseJson = new JsonParser().parse(execute.body().charStream()).getAsJsonObject()
-        def releaseId = responseJson.get("id").asInt
-        println ":githubRelease URL ${responseJson.get("html_url")}"
+        def responseJson = new JSONObject(execute.body().string())
+        println ":githubRelease URL ${responseJson.getString("html_url")}"
         println ':githubRelease UPLOADING ASSETS'
         def util = new ContentInfoUtil()
         this.releaseAssets.files.forEach { asset ->
@@ -88,7 +84,7 @@ class GithubReleaseTask extends DefaultTask {
             def type = MediaType.parse(info.mimeType)
             if (type == null)
                 println ':githubRelease UPLOAD FAILED\n\tMime Type could not be determined'
-            def uploadUrl = responseJson.get("upload_url").asString
+            def uploadUrl = responseJson.getString("upload_url")
             def assetBody = RequestBody.create(type, asset)
 
             Request assetPost = new Request.Builder()

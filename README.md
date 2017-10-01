@@ -15,7 +15,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.com.github.breadmoirai:github-release:1.0.1"
+    classpath "gradle.plugin.com.github.breadmoirai:github-release:1.0.9"
   }
 }
 
@@ -25,7 +25,7 @@ apply plugin: "com.github.breadmoirai.github-release"
 Build script snippet for new, incubating, plugin mechanism introduced in Gradle 2.1:
 ```groovy
 plugins {
-  id "com.github.breadmoirai.github-release" version "1.0.1"
+  id "com.github.breadmoirai.github-release" version "1.0.9"
 }
 ```
 

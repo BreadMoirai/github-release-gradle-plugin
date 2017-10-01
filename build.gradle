@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'com.github.breadmoirai'
-version '1.0.1'
+version '1.0.9'
 
 repositories {
     jcenter()
@@ -17,6 +17,7 @@ repositories {
 dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
     compile 'com.j256.simplemagic:simplemagic:1.10'
+    compile group: 'org.json', name: 'json', version: '20170516'
     compileOnly 'com.gradle.publish:plugin-publish-plugin:0.9.7'
 }
 
