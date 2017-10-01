@@ -1,19 +1,16 @@
 package com.github.breadmoirai
 
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.j256.simplemagic.ContentInfoUtil
-import groovy.json.JsonBuilder
-import okhttp3.Headers
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskAction
-import org.gradle.internal.impldep.com.google.gson.JsonObject
-import org.gradle.internal.impldep.com.google.gson.JsonParser
 
 class GithubReleaseTask extends DefaultTask {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8")
