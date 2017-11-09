@@ -37,7 +37,7 @@ class GithubReleaseTask extends DefaultTask {
         def tag = tagName.getOrNull() ?: "v$project.version"
         def tar = targetCommitish.getOrNull() ?: 'master'
         def rel = releaseName.getOrNull() ?: tag
-        def bod = body.getOrNull() ?: ''
+        def bod = this.body.getOrNull() ?: ''
         def group = project.group.toString()
         def own = this.owner.getOrNull() ?:
                 group.substring(group.lastIndexOf('.') + 1)
@@ -76,30 +76,35 @@ class GithubReleaseTask extends DefaultTask {
             throw new Error(status + '\n' + execute.toString())
         }
         println ":githubRelease STATUS " + status.toUpperCase()
-        def responseJson = new JSONObject(execute.body().string())
+        def body = execute.body()
+        def responseJson = new JSONObject(body.string())
+        body.close()
         println ":githubRelease URL ${responseJson.getString("html_url")}"
         println ':githubRelease UPLOADING ASSETS'
         def util = new ContentInfoUtil()
-        this.releaseAssets.files.forEach { asset ->
-            println ':githubRelease UPLOADING ' + asset.name
-            def info = util.findMatch(asset)
-            def type = MediaType.parse(info.mimeType)
-            if (type == null)
-                println ':githubRelease UPLOAD FAILED\n\tMime Type could not be determined'
-            def uploadUrl = responseJson.getString("upload_url")
-            def assetBody = RequestBody.create(type, asset)
+        if (this.releaseAssets.isEmpty())
+            println ':githubRelease NO ASSETS FOUND'
+        else
+            this.releaseAssets.files.forEach { asset ->
+                println ':githubRelease UPLOADING ' + asset.name
+                def info = util.findMatch(asset)
+                def type = MediaType.parse(info.mimeType)
+                if (type == null)
+                    println ':githubRelease UPLOAD FAILED\n\tMime Type could not be determined'
+                def uploadUrl = responseJson.getString("upload_url")
+                def assetBody = RequestBody.create(type, asset)
 
-            Request assetPost = new Request.Builder()
-                    .addHeader('Authorization', "token ${tok}")
-                    .addHeader('User-Agent', "${own}.${rep}")
-                    .addHeader('Accept', 'application/vnd.github.v3+json')
-                    .addHeader('Content-Type', 'application/json')
-                    .url(uploadUrl.replace('{?name,label}', "?name=$asset.name"))
-                    .post(assetBody)
-                    .build()
+                Request assetPost = new Request.Builder()
+                        .addHeader('Authorization', "token ${tok}")
+                        .addHeader('User-Agent', "${own}.${rep}")
+                        .addHeader('Accept', 'application/vnd.github.v3+json')
+                        .addHeader('Content-Type', 'application/json')
+                        .url(uploadUrl.replace('{?name,label}', "?name=$asset.name"))
+                        .post(assetBody)
+                        .build()
 
-            def assetResponse = client.newCall(assetPost).execute()
-        }
+                def assetResponse = client.newCall(assetPost).execute().close()
+            }
     }
 
     void setOwner(Provider<String> owner) {
