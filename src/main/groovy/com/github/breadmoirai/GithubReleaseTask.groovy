@@ -1,15 +1,12 @@
 package com.github.breadmoirai
 
 import com.j256.simplemagic.ContentInfoUtil
-import groovy.json.JsonBuilder
-import okhttp3.Headers
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.impldep.com.google.gson.JsonObject
@@ -44,7 +41,7 @@ class GithubReleaseTask extends DefaultTask {
         def bod = body.getOrNull() ?: ''
         def group = project.group.toString()
         def own = this.owner.getOrNull() ?:
-            group.substring(group.lastIndexOf('.') + 1)
+                group.substring(group.lastIndexOf('.') + 1)
         def rep = this.repo.getOrNull() ?: project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
         boolean dra = draft.getOrNull() ?: false
         boolean pre = prerelease.getOrNull() ?: false
@@ -66,6 +63,7 @@ class GithubReleaseTask extends DefaultTask {
         Request request = new Request.Builder()
                 .addHeader('Authorization', "token ${tok}")
                 .addHeader('User-Agent', "${own}.${rep}")
+                .addHeader('Accept', 'application/vnd.github.v3+json')
                 .url("https://api.github.com/repos/${own}/${rep}/releases")
                 .post(requestBody)
                 .build()
@@ -79,7 +77,7 @@ class GithubReleaseTask extends DefaultTask {
             throw new Error(status)
         }
         println ":githubRelease STATUS " + status.toUpperCase()
-         def responseJson = new JsonParser().parse(execute.body().charStream()).getAsJsonObject()
+        def responseJson = new JsonParser().parse(execute.body().charStream()).getAsJsonObject()
         def releaseId = responseJson.get("id").asInt
         println ":githubRelease URL ${responseJson.get("html_url")}"
         println ':githubRelease UPLOADING ASSETS'
@@ -96,6 +94,7 @@ class GithubReleaseTask extends DefaultTask {
             Request assetPost = new Request.Builder()
                     .addHeader('Authorization', "token ${tok}")
                     .addHeader('User-Agent', "${own}.${rep}")
+                    .addHeader('Accept', 'application/vnd.github.v3+json')
                     .url(uploadUrl.replace('{?name,label}', "?name=$asset.name"))
                     .post(assetBody)
                     .build()
