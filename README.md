@@ -38,7 +38,7 @@ githubRelease {
     repo = "github-release" // by default this is set to your project name
     tagName = "v1.0.0" // by default this is set to "v$project.version"
     targetCommitish = "master" // by default this is set to "master"
-    releaseName = "v1.0.0" // by default this is the same as the tagName
+    name = "v1.0.0" // Release title, by default this is the same as the tagName
     body = "Wham, bam! Thank you clam!" // by default this is empty
     draft = false // by default this is false
     prerelease = false // by default this is false
