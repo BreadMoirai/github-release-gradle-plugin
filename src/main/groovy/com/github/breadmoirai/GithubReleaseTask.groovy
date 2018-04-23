@@ -1,10 +1,12 @@
 package com.github.breadmoirai
 
+import com.j256.simplemagic.ContentInfo
 import com.j256.simplemagic.ContentInfoUtil
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okio.Buffer
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.Provider
@@ -32,7 +34,6 @@ class GithubReleaseTask extends DefaultTask {
 
     @TaskAction
     void publishRelease() {
-        println ':githubRelease CREATING RELEASE'
         def client = new OkHttpClient()
         def tag = tagName.getOrNull() ?: "v$project.version"
         def tar = targetCommitish.getOrNull() ?: 'master'
@@ -46,6 +47,50 @@ class GithubReleaseTask extends DefaultTask {
         boolean pre = prerelease.getOrNull() ?: false
         def tok = this.token.getOrNull()
         if (tok == null) throw new MissingPropertyException("Field 'token' is not set for githubRelease", 'token', String)
+        def releaseUrl = "https://api.github.com/repos/${own}/${rep}/releases/tags/${tag}"
+
+        println ':githubRelease CHECKING PREVIOUS RELEASE ' + releaseUrl
+        Request request = new Request.Builder()
+                .addHeader('Authorization', "token ${tok}")
+                .addHeader('User-Agent', "${own}.${rep}")
+                .addHeader('Accept', 'application/vnd.github.v3+json')
+                .addHeader('Content-Type', 'application/json')
+                .url(releaseUrl)
+                .get()
+                .build()
+        def execute = client.newCall(request).execute()
+        def headers = execute.headers()
+        def status = headers.get("Status")
+        if (status.startsWith('200')) {
+            println ':githubRelease PREVIOUS RELEASE EXISTS'
+            def body = execute.body()
+            def responseJson = new JSONObject(body.string())
+            body.close()
+            def prevReleaseUrl = responseJson.getString("url")
+
+            println ':githubRelease DELETING PREVIOUS RELEASE ' + prevReleaseUrl
+            request = new Request.Builder()
+                    .addHeader('Authorization', "token ${tok}")
+                    .addHeader('User-Agent', "${own}.${rep}")
+                    .addHeader('Accept', 'application/vnd.github.v3+json')
+                    .addHeader('Content-Type', 'application/json')
+                    .url(prevReleaseUrl)
+                    .delete()
+                    .build()
+            execute = client.newCall(request).execute()
+            headers = execute.headers()
+            status = headers.get("Status")
+            if (!status.startsWith('204')) {
+                if (status.startsWith('404')) {
+                    throw new Error("404 Repository with Owner: '${own}' and Name: '${rep}' was not found")
+                }
+                def buffer = new Buffer()
+                request.newBuilder().build().body().writeTo(buffer)
+                throw new Error('Couldnt delete old release: ' + status.toString() + '\n' + execute.toString() + '\n' + buffer.readUtf8())
+            }
+        }
+
+        println ':githubRelease CREATING RELEASE'
         def jsonObject = new JSONObject()
         jsonObject.with {
             put('tag_name', tag)
@@ -58,7 +103,7 @@ class GithubReleaseTask extends DefaultTask {
 
         def requestBody = RequestBody.create(JSON, jsonObject.toString())
 
-        Request request = new Request.Builder()
+        request = new Request.Builder()
                 .addHeader('Authorization', "token ${tok}")
                 .addHeader('User-Agent', "${own}.${rep}")
                 .addHeader('Accept', 'application/vnd.github.v3+json')
@@ -66,14 +111,16 @@ class GithubReleaseTask extends DefaultTask {
                 .url("https://api.github.com/repos/${own}/${rep}/releases")
                 .post(requestBody)
                 .build()
-        def execute = client.newCall(request).execute()
-        def headers = execute.headers()
-        def status = headers.get("Status")
+        execute = client.newCall(request).execute()
+        headers = execute.headers()
+        status = headers.get("Status")
         if (!status.startsWith('201')) {
             if (status.startsWith('404')) {
                 throw new Error("404 Repository with Owner: '${own}' and Name: '${rep}' was not found")
             }
-            throw new Error(status + '\n' + execute.toString())
+            def buffer = new Buffer()
+            request.newBuilder().build().body().writeTo(buffer)
+            throw new Error(status + '\n' + execute.toString() + '\n' + buffer.readUtf8())
         }
         println ":githubRelease STATUS " + status.toUpperCase()
         def body = execute.body()
@@ -88,6 +135,8 @@ class GithubReleaseTask extends DefaultTask {
             this.releaseAssets.files.forEach { asset ->
                 println ':githubRelease UPLOADING ' + asset.name
                 def info = util.findMatch(asset)
+                if(info == null)
+                    info = ContentInfo.EMPTY_INFO
                 def type = MediaType.parse(info.mimeType)
                 if (type == null)
                     println ':githubRelease UPLOAD FAILED\n\tMime Type could not be determined'
