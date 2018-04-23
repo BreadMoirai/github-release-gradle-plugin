@@ -7,7 +7,7 @@ import org.gradle.api.provider.Provider
 
 class GithubReleaseExtension {
 
-    final PropertyState<String> owner, repo, token, tagName, targetCommitish, name, body;
+    final PropertyState<String> owner, repo, token, tagName, targetCommitish, releaseName, body;
     final PropertyState<Boolean> draft, prerelease
 
     final ConfigurableFileCollection releaseAssets
@@ -18,7 +18,7 @@ class GithubReleaseExtension {
         token = project.property(String)
         tagName = project.property(String)
         targetCommitish = project.property(String)
-        name = project.property(String)
+        releaseName = project.property(String)
         body = project.property(String)
         draft = project.property(Boolean)
         prerelease = project.property(Boolean)
@@ -45,8 +45,8 @@ class GithubReleaseExtension {
         return targetCommitish
     }
 
-    Provider<String> getNameProvider() {
-        return name
+    Provider<String> getReleaseNameProvider() {
+        return releaseName
     }
 
     Provider<String> getBodyProvider() {
@@ -85,8 +85,8 @@ class GithubReleaseExtension {
         this.targetCommitish.set(targetCommitish)
     }
 
-    void setName(String name) {
-        this.name.set(name)
+    void setReleaseName(String releaseName) {
+        this.releaseName.set(releaseName)
     }
 
     void setBody(String body) {
