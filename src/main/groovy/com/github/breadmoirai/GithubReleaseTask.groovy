@@ -46,16 +46,15 @@ class GithubReleaseTask extends DefaultTask {
     @TaskAction
     void publishRelease() {
         def client = new OkHttpClient()
-        def tag = tagName.getOrNull() ?: "v$project.version"
-        def tar = targetCommitish.getOrNull() ?: 'master'
-        def rel = releaseName.getOrNull() ?: tag
-        def bod = this.body.getOrNull() ?: ''
+        def tag = tagName.getOrElse("v$project.version")
+        def tar = targetCommitish.getOrElse('master')
+        def rel = releaseName.getOrElse(tag)
+        def bod = this.body.getOrElse('')
         def group = project.group.toString()
-        def own = this.owner.getOrNull() ?:
-                group.substring(group.lastIndexOf('.') + 1)
-        def rep = this.repo.getOrNull() ?: project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
-        boolean dra = draft.getOrNull() ?: false
-        boolean pre = prerelease.getOrNull() ?: false
+        def own = this.owner.getOrElse(group.substring(group.lastIndexOf('.') + 1))
+        def rep = this.repo.getOrElse(project.name) ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
+        boolean dra = draft.getOrElse(false)
+        boolean pre = prerelease.getOrElse(false)
         def tok = this.token.getOrNull()
         if (tok == null) throw new MissingPropertyException("Field 'token' is not set for githubRelease", 'token', String)
         def releaseUrl = "https://api.github.com/repos/${own}/${rep}/releases/tags/${tag}"
@@ -97,7 +96,7 @@ class GithubReleaseTask extends DefaultTask {
                 }
                 def buffer = new Buffer()
                 request.newBuilder().build().body().writeTo(buffer)
-                throw new Error('Couldnt delete old release: ' + status.toString() + '\n' + execute.toString() + '\n' + buffer.readUtf8())
+                throw new Error("Couldn't delete old release: $status\n$execute\n${buffer.readUtf8()}")
             }
         }
 
@@ -145,12 +144,10 @@ class GithubReleaseTask extends DefaultTask {
         else
             this.releaseAssets.files.forEach { asset ->
                 println ':githubRelease UPLOADING ' + asset.name
-                def info = util.findMatch(asset)
-                if(info == null)
-                    info = ContentInfo.EMPTY_INFO
+                def info = util.findMatch(asset) ?: ContentInfo.EMPTY_INFO
                 def type = MediaType.parse(info.mimeType)
                 if (type == null)
-                    println ':githubRelease UPLOAD FAILED\n\tMime Type could not be determined'
+                    println ':githubRelease WARNING Mime Type could not be determined'
                 def uploadUrl = responseJson.getString("upload_url")
                 def assetBody = RequestBody.create(type, asset)
 
