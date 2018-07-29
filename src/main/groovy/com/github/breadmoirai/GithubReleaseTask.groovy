@@ -9,6 +9,7 @@ import okhttp3.RequestBody
 import okio.Buffer
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskAction
 import org.json.JSONObject
@@ -16,20 +17,30 @@ import org.json.JSONObject
 class GithubReleaseTask extends DefaultTask {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8")
 
-    final Provider<String> owner = project.property(String),
-                           repo = project.property(String),
-                           token = project.property(String),
-                           tagName = project.property(String),
-                           targetCommitish = project.property(String),
-                           releaseName = project.property(String),
-                           body = project.property(String)
-
-    final Provider<Boolean> draft = project.property(Boolean), prerelease = project.property(Boolean)
-
-    final ConfigurableFileCollection releaseAssets = project.files()
+    final Provider<String> owner
+    final Provider<String> repo
+    final Provider<String> token
+    final Provider<String> tagName
+    final Provider<String> targetCommitish
+    final Provider<String> releaseName
+    final Provider<String> body
+    final Provider<Boolean> draft
+    final Provider<Boolean> prerelease
+    final ConfigurableFileCollection releaseAssets
 
     GithubReleaseTask() {
         this.setGroup('publishing')
+        final ObjectFactory objectFactory = project.objects
+        owner = objectFactory.property(String)
+        repo = objectFactory.property(String)
+        token = objectFactory.property(String)
+        tagName = objectFactory.property(String)
+        targetCommitish = objectFactory.property(String)
+        releaseName = objectFactory.property(String)
+        body = objectFactory.property(String)
+        draft = objectFactory.property(Boolean)
+        prerelease = objectFactory.property(Boolean)
+        releaseAssets = project.files()
     }
 
     @TaskAction

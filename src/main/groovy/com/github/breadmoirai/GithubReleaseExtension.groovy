@@ -2,26 +2,36 @@ package com.github.breadmoirai
 
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.provider.PropertyState
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+
 
 class GithubReleaseExtension {
 
-    final PropertyState<String> owner, repo, token, tagName, targetCommitish, releaseName, body;
-    final PropertyState<Boolean> draft, prerelease
+    final Property<String> owner
+    final Property<String> repo
+    final Property<String> token
+    final Property<String> tagName
+    final Property<String> targetCommitish
+    final Property<String> releaseName
+    final Property<String> body
+    final Property<Boolean> draft
+    final Property<Boolean> prerelease
 
     final ConfigurableFileCollection releaseAssets
 
     GithubReleaseExtension(Project project) {
-        owner = project.property(String)
-        repo = project.property(String)
-        token = project.property(String)
-        tagName = project.property(String)
-        targetCommitish = project.property(String)
-        releaseName = project.property(String)
-        body = project.property(String)
-        draft = project.property(Boolean)
-        prerelease = project.property(Boolean)
+        final ObjectFactory objectFactory = project.objects
+        owner = objectFactory.property(String)
+        repo = objectFactory.property(String)
+        token = objectFactory.property(String)
+        tagName = objectFactory.property(String)
+        targetCommitish = objectFactory.property(String)
+        releaseName = objectFactory.property(String)
+        body = objectFactory.property(String)
+        draft = objectFactory.property(Boolean)
+        prerelease = objectFactory.property(Boolean)
         releaseAssets = project.files()
     }
 
@@ -61,7 +71,7 @@ class GithubReleaseExtension {
         return prerelease
     }
 
-    def getReleaseAssets() {
+    ConfigurableFileCollection getReleaseAssets() {
         return releaseAssets
     }
 
