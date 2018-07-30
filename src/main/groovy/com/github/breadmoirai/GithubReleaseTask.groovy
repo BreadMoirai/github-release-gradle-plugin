@@ -76,20 +76,18 @@ class GithubReleaseTask extends DefaultTask {
             String rep,
             boolean dra,
             boolean pre,
-            String tok,
-            String releaseUrl
+            String tok
         ) = getVariables()
         FileCollection releaseAssets = releaseAssets
 
-        Response response =
-            checkForPreviousRelease(releaseUrl, tok, own, rep, client)
-        if (response.code() == 200)
-            deletePreviousRelease(response, tok, own, rep, client)
+        Response response1 = checkForPreviousRelease(tok, own, rep, tag, client)
+        if (response1.code() == 200) {
+            println ':githubRelease PREVIOUS RELEASE EXISTS'
+            deletePreviousRelease(response1, tok, own, rep, client)
+        }
 
-        Response responseJson =
-                createRelease(tag, tar, rel, bod, dra, pre, tok, own, rep, client)
-
-        uploadAssets(responseJson, tok, own, rep, releaseAssets, client)
+        Response response3 = createRelease(tag, tar, rel, bod, dra, pre, tok, own, rep, client)
+        uploadAssets(response3, tok, own, rep, releaseAssets, client)
     }
 
     private List getVariables() {
@@ -104,17 +102,13 @@ class GithubReleaseTask extends DefaultTask {
         boolean pre = prerelease.getOrElse(false)
         String tok = this.token.getOrNull()
         if (tok == null) throw new MissingPropertyException("Field 'token' is not set for githubRelease", 'token', String)
-        String releaseUrl = "https://api.github.com/repos/${own}/${rep}/releases/tags/${tag}"
-        return [tag, tar, rel, bod, own, rep, dra, pre, tok, releaseUrl]
+        return [tag, tar, rel, bod, own, rep, dra, pre, tok]
     }
 
-    private static Response checkForPreviousRelease(String releaseUrl, String tok, String own, String rep, OkHttpClient client) {
-        println ':githubRelease CHECKING PREVIOUS RELEASE ' + releaseUrl
-        Request request = new Request.Builder()
-                .addHeader('Authorization', "token ${tok}")
-                .addHeader('User-Agent', "${own}.${rep}")
-                .addHeader('Accept', 'application/vnd.github.v3+json')
-                .addHeader('Content-Type', 'application/json')
+    private static Response checkForPreviousRelease(String tok, String own, String rep, String tag, OkHttpClient client) {
+        String releaseUrl = "https://api.github.com/repos/${own}/${rep}/releases/tags/${tag}"
+        println ':githubRelease CHECKING FOR PREVIOUS RELEASE ' + releaseUrl
+        Request request = createRequestWithHeaders(tok, own, rep)
                 .url(releaseUrl)
                 .get()
                 .build()
@@ -125,18 +119,11 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     private static Response deletePreviousRelease(Response previous, String tok, String own, String rep, OkHttpClient client) {
-        println ':githubRelease PREVIOUS RELEASE EXISTS'
-        def body = previous.body()
-        def responseJson = new JSONObject(body.string())
-        body.close()
+        JSONObject responseJson = new JSONObject(previous.body().string())
         def prevReleaseUrl = responseJson.getString("url")
 
         println ':githubRelease DELETING PREVIOUS RELEASE ' + prevReleaseUrl
-        Request request = new Request.Builder()
-                .addHeader('Authorization', "token ${tok}")
-                .addHeader('User-Agent', "${own}.${rep}")
-                .addHeader('Accept', 'application/vnd.github.v3+json')
-                .addHeader('Content-Type', 'application/json')
+        Request request = createRequestWithHeaders(tok, own, rep)
                 .url(prevReleaseUrl)
                 .delete()
                 .build()
@@ -165,11 +152,7 @@ class GithubReleaseTask extends DefaultTask {
 
         def requestBody = RequestBody.create(JSON, jsonObject.toString())
 
-        Request request = new Request.Builder()
-                .addHeader('Authorization', "token ${tok}")
-                .addHeader('User-Agent', "${own}.${rep}")
-                .addHeader('Accept', 'application/vnd.github.v3+json')
-                .addHeader('Content-Type', 'application/json')
+        Request request = createRequestWithHeaders(tok, own, rep)
                 .url("https://api.github.com/repos/${own}/${rep}/releases")
                 .post(requestBody)
                 .build()
@@ -185,8 +168,10 @@ class GithubReleaseTask extends DefaultTask {
         return response
     }
 
-    private static List<Response> uploadAssets(JSONObject responseJson, String tok, String own, String rep, FileCollection releaseAssets, OkHttpClient client) {
+    private static List<Response> uploadAssets(Response response, String tok, String own, String rep, FileCollection releaseAssets, OkHttpClient client) {
         println ':githubRelease UPLOADING ASSETS'
+        JSONObject responseJson = new JSONObject(response.body().string())
+
         ContentInfoUtil util = new ContentInfoUtil()
         if (releaseAssets.isEmpty()) {
             println ':githubRelease NO ASSETS FOUND'
@@ -201,17 +186,21 @@ class GithubReleaseTask extends DefaultTask {
             String uploadUrl = responseJson.getString("upload_url")
             RequestBody assetBody = RequestBody.create(type, asset)
 
-            Request assetPost = new Request.Builder()
-                    .addHeader('Authorization', "token ${tok}")
-                    .addHeader('User-Agent', "${own}.${rep}")
-                    .addHeader('Accept', 'application/vnd.github.v3+json')
-                    .addHeader('Content-Type', 'application/json')
+            Request assetPost = createRequestWithHeaders(tok, own, rep)
                     .url(uploadUrl.replace('{?name,label}', "?name=$asset.name"))
                     .post(assetBody)
                     .build()
 
             return client.newCall(assetPost).execute()
         }
+    }
+
+    private static Request.Builder createRequestWithHeaders(String tok, String own, String rep) {
+        return new Request.Builder()
+                .addHeader('Authorization', "token ${tok}")
+                .addHeader('User-Agent', "${own}.${rep}")
+                .addHeader('Accept', 'application/vnd.github.v3+json')
+                .addHeader('Content-Type', 'application/json')
     }
 
     void setOwner(Provider<String> owner) {
