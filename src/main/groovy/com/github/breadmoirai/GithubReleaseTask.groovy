@@ -22,29 +22,33 @@ import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
-import okio.Buffer
+import okhttp3.Response
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
 import org.json.JSONObject
 
 class GithubReleaseTask extends DefaultTask {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8")
 
-    final Provider<String> owner
-    final Provider<String> repo
-    final Provider<String> token
-    final Provider<String> tagName
-    final Provider<String> targetCommitish
-    final Provider<String> releaseName
-    final Provider<String> body
-    final Provider<Boolean> draft
-    final Provider<Boolean> prerelease
-    final ConfigurableFileCollection releaseAssets
+    @Input final Provider<String> owner
+    @Input final Provider<String> repo
+    @Input final Provider<String> token
+    @Input final Provider<String> tagName
+    @Input final Provider<String> targetCommitish
+    @Input final Provider<String> releaseName
+    @Input final Provider<String> body
+    @Input final Provider<Boolean> draft
+    @Input final Provider<Boolean> prerelease
+    @InputFiles final ConfigurableFileCollection releaseAssets
 
     GithubReleaseTask() {
+        print("wow")
         this.setGroup('publishing')
         final ObjectFactory objectFactory = project.objects
         owner = objectFactory.property(String)
@@ -61,20 +65,50 @@ class GithubReleaseTask extends DefaultTask {
 
     @TaskAction
     void publishRelease() {
-        def client = new OkHttpClient()
-        def tag = tagName.getOrElse("v$project.version")
-        def tar = targetCommitish.getOrElse('master')
-        def rel = releaseName.getOrElse(tag)
-        def bod = this.body.getOrElse('')
-        def group = project.group.toString()
-        def own = this.owner.getOrElse(group.substring(group.lastIndexOf('.') + 1))
-        def rep = this.repo.getOrElse(project.name) ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
+        OkHttpClient client = new OkHttpClient()
+
+        def (
+            String tag,
+            String tar,
+            String rel,
+            String bod,
+            String own,
+            String rep,
+            boolean dra,
+            boolean pre,
+            String tok,
+            String releaseUrl
+        ) = getVariables()
+        FileCollection releaseAssets = releaseAssets
+
+        Response response =
+            checkForPreviousRelease(releaseUrl, tok, own, rep, client)
+        if (response.code() == 200)
+            deletePreviousRelease(response, tok, own, rep, client)
+
+        Response responseJson =
+                createRelease(tag, tar, rel, bod, dra, pre, tok, own, rep, client)
+
+        uploadAssets(responseJson, tok, own, rep, releaseAssets, client)
+    }
+
+    private List getVariables() {
+        String tag = tagName.getOrElse("v$project.version")
+        String tar = targetCommitish.getOrElse('master')
+        String rel = releaseName.getOrElse(tag)
+        String bod = this.body.getOrElse('')
+        String group = project.group.toString()
+        String own = this.owner.getOrElse(group.substring(group.lastIndexOf('.') + 1))
+        String rep = this.repo.getOrElse(project.name) ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
         boolean dra = draft.getOrElse(false)
         boolean pre = prerelease.getOrElse(false)
-        def tok = this.token.getOrNull()
+        String tok = this.token.getOrNull()
         if (tok == null) throw new MissingPropertyException("Field 'token' is not set for githubRelease", 'token', String)
-        def releaseUrl = "https://api.github.com/repos/${own}/${rep}/releases/tags/${tag}"
+        String releaseUrl = "https://api.github.com/repos/${own}/${rep}/releases/tags/${tag}"
+        return [tag, tar, rel, bod, own, rep, dra, pre, tok, releaseUrl]
+    }
 
+    private static Response checkForPreviousRelease(String releaseUrl, String tok, String own, String rep, OkHttpClient client) {
         println ':githubRelease CHECKING PREVIOUS RELEASE ' + releaseUrl
         Request request = new Request.Builder()
                 .addHeader('Authorization', "token ${tok}")
@@ -84,40 +118,42 @@ class GithubReleaseTask extends DefaultTask {
                 .url(releaseUrl)
                 .get()
                 .build()
-        def execute = client.newCall(request).execute()
-        def headers = execute.headers()
-        def status = headers.get("Status")
-        if (status.startsWith('200')) {
-            println ':githubRelease PREVIOUS RELEASE EXISTS'
-            def body = execute.body()
-            def responseJson = new JSONObject(body.string())
-            body.close()
-            def prevReleaseUrl = responseJson.getString("url")
+        Response response = client
+                .newCall(request)
+                .execute()
+        return response
+    }
 
-            println ':githubRelease DELETING PREVIOUS RELEASE ' + prevReleaseUrl
-            request = new Request.Builder()
-                    .addHeader('Authorization', "token ${tok}")
-                    .addHeader('User-Agent', "${own}.${rep}")
-                    .addHeader('Accept', 'application/vnd.github.v3+json')
-                    .addHeader('Content-Type', 'application/json')
-                    .url(prevReleaseUrl)
-                    .delete()
-                    .build()
-            execute = client.newCall(request).execute()
-            headers = execute.headers()
-            status = headers.get("Status")
-            if (!status.startsWith('204')) {
-                if (status.startsWith('404')) {
-                    throw new Error("404 Repository with Owner: '${own}' and Name: '${rep}' was not found")
-                }
-                def buffer = new Buffer()
-                request.newBuilder().build().body().writeTo(buffer)
-                throw new Error("Couldn't delete old release: $status\n$execute\n${buffer.readUtf8()}")
+    private static Response deletePreviousRelease(Response previous, String tok, String own, String rep, OkHttpClient client) {
+        println ':githubRelease PREVIOUS RELEASE EXISTS'
+        def body = previous.body()
+        def responseJson = new JSONObject(body.string())
+        body.close()
+        def prevReleaseUrl = responseJson.getString("url")
+
+        println ':githubRelease DELETING PREVIOUS RELEASE ' + prevReleaseUrl
+        Request request = new Request.Builder()
+                .addHeader('Authorization', "token ${tok}")
+                .addHeader('User-Agent', "${own}.${rep}")
+                .addHeader('Accept', 'application/vnd.github.v3+json')
+                .addHeader('Content-Type', 'application/json')
+                .url(prevReleaseUrl)
+                .delete()
+                .build()
+        Response response = client.newCall(request).execute()
+        int status = response.code()
+        if (status != 204) {
+            if (status == 404) {
+                throw new Error("404 Repository with Owner: '${own}' and Name: '${rep}' was not found")
             }
+            throw new Error("Couldn't delete old release: $status\n$response")
         }
+        return response
+    }
 
+    private static Response createRelease(String tag, String tar, String rel, String bod, boolean dra, boolean pre, String tok, String own, String rep, OkHttpClient client) {
         println ':githubRelease CREATING RELEASE'
-        def jsonObject = new JSONObject()
+        JSONObject jsonObject = new JSONObject()
         jsonObject.with {
             put('tag_name', tag)
             put('target_commitish', tar)
@@ -129,7 +165,7 @@ class GithubReleaseTask extends DefaultTask {
 
         def requestBody = RequestBody.create(JSON, jsonObject.toString())
 
-        request = new Request.Builder()
+        Request request = new Request.Builder()
                 .addHeader('Authorization', "token ${tok}")
                 .addHeader('User-Agent', "${own}.${rep}")
                 .addHeader('Accept', 'application/vnd.github.v3+json')
@@ -137,47 +173,45 @@ class GithubReleaseTask extends DefaultTask {
                 .url("https://api.github.com/repos/${own}/${rep}/releases")
                 .post(requestBody)
                 .build()
-        execute = client.newCall(request).execute()
-        headers = execute.headers()
-        status = headers.get("Status")
-        if (!status.startsWith('201')) {
-            if (status.startsWith('404')) {
+        Response response = client.newCall(request).execute()
+        int status = response.code()
+        if (status != 201) {
+            if (status == 404) {
                 throw new Error("404 Repository with Owner: '${own}' and Name: '${rep}' was not found")
             }
-            def buffer = new Buffer()
-            request.newBuilder().build().body().writeTo(buffer)
-            throw new Error(status + '\n' + execute.toString() + '\n' + buffer.readUtf8())
+            throw new Error("Could not create release: $status\n$response")
         }
-        println ":githubRelease STATUS " + status.toUpperCase()
-        def body = execute.body()
-        def responseJson = new JSONObject(body.string())
-        body.close()
-        println ":githubRelease URL ${responseJson.getString("html_url")}"
+        println ":githubRelease STATUS ${response.header("Status").toUpperCase()}"
+        return response
+    }
+
+    private static List<Response> uploadAssets(JSONObject responseJson, String tok, String own, String rep, FileCollection releaseAssets, OkHttpClient client) {
         println ':githubRelease UPLOADING ASSETS'
-        def util = new ContentInfoUtil()
-        if (this.releaseAssets.isEmpty())
+        ContentInfoUtil util = new ContentInfoUtil()
+        if (releaseAssets.isEmpty()) {
             println ':githubRelease NO ASSETS FOUND'
-        else
-            this.releaseAssets.files.forEach { asset ->
-                println ':githubRelease UPLOADING ' + asset.name
-                def info = util.findMatch(asset) ?: ContentInfo.EMPTY_INFO
-                def type = MediaType.parse(info.mimeType)
-                if (type == null)
-                    println ':githubRelease WARNING Mime Type could not be determined'
-                def uploadUrl = responseJson.getString("upload_url")
-                def assetBody = RequestBody.create(type, asset)
+            return Collections.emptyList()
+        }
+        return releaseAssets.files.stream().collect { asset ->
+            println ':githubRelease UPLOADING ' + asset.name
+            ContentInfo info = util.findMatch(asset) ?: ContentInfo.EMPTY_INFO
+            MediaType type = MediaType.parse(info.mimeType)
+            if (type == null)
+                println ':githubRelease WARNING Mime Type could not be determined'
+            String uploadUrl = responseJson.getString("upload_url")
+            RequestBody assetBody = RequestBody.create(type, asset)
 
-                Request assetPost = new Request.Builder()
-                        .addHeader('Authorization', "token ${tok}")
-                        .addHeader('User-Agent', "${own}.${rep}")
-                        .addHeader('Accept', 'application/vnd.github.v3+json')
-                        .addHeader('Content-Type', 'application/json')
-                        .url(uploadUrl.replace('{?name,label}', "?name=$asset.name"))
-                        .post(assetBody)
-                        .build()
+            Request assetPost = new Request.Builder()
+                    .addHeader('Authorization', "token ${tok}")
+                    .addHeader('User-Agent', "${own}.${rep}")
+                    .addHeader('Accept', 'application/vnd.github.v3+json')
+                    .addHeader('Content-Type', 'application/json')
+                    .url(uploadUrl.replace('{?name,label}', "?name=$asset.name"))
+                    .post(assetBody)
+                    .build()
 
-                def assetResponse = client.newCall(assetPost).execute().close()
-            }
+            return client.newCall(assetPost).execute()
+        }
     }
 
     void setOwner(Provider<String> owner) {
