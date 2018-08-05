@@ -65,9 +65,22 @@ class GithubReleaseTask extends DefaultTask {
         boolean dra = draft.getOrElse(false)
         boolean pre = prerelease.getOrElse(false)
         String tok = this.token.getOrNull()
+        String auth
+        if (tok != null) {
+            auth = "Token $tok"
+        } else {
+            GithubLoginApp.start()
+            Optional<String> wait = GithubLoginApp.getApp().waitForResult()
+            if (!wait.isPresent()) {
+                println "githubRelease: TASK CANCELLED"
+                return
+            } else {
+                auth = "Basic ${wait.get()}"
+            }
+        }
         FileCollection releaseAssets = this.releaseAssets
 
-        new GithubRelease(own, rep, tok, tag, tar, rel, bod, dra, pre, releaseAssets).run()
+        new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets).run()
     }
 
     void setOwner(Provider<String> owner) {

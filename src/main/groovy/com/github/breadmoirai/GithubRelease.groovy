@@ -30,22 +30,22 @@ class GithubRelease implements Runnable {
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8")
 
-    final String owner
-    final String repo
-    final String token
-    final String tagName
-    final String targetCommitish
-    final String releaseName
-    final String body
-    final Boolean draft
-    final Boolean prerelease
-    final FileCollection releaseAssets
-    final OkHttpClient client
+    private final String owner
+    private final String repo
+    private final String authorization
+    private final String tagName
+    private final String targetCommitish
+    private final String releaseName
+    private final String body
+    private final boolean draft
+    private final boolean prerelease
+    private final FileCollection releaseAssets
+    private final OkHttpClient client
 
-    GithubRelease(String owner, String repo, String token, String tagName, String targetCommitish, String releaseName, String body, Boolean draft, Boolean prerelease, FileCollection releaseAssets) {
+    GithubRelease(String owner, String repo, String authorization, String tagName, String targetCommitish, String releaseName, String body, boolean draft, boolean prerelease, FileCollection releaseAssets) {
         this.owner = owner
         this.repo = repo
-        this.token = token
+        this.authorization = authorization
         this.tagName = tagName
         this.targetCommitish = targetCommitish
         this.releaseName = releaseName
@@ -161,8 +161,8 @@ class GithubRelease implements Runnable {
 
     Request.Builder createRequestWithHeaders() {
         return new Request.Builder()
-                .addHeader('Authorization', "token ${token}")
-                .addHeader('User-Agent', "breadmoirai:github-release-gradle-plugin")
+                .addHeader('Authorization', authorization)
+                .addHeader('User-Agent', "breadmoirai github-release-gradle-plugin")
                 .addHeader('Accept', 'application/vnd.github.v3+json')
                 .addHeader('Content-Type', 'application/json')
     }

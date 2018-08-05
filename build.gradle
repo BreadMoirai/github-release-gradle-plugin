@@ -31,14 +31,18 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.codehaus.groovy:groovy-all:2.4.12'
     implementation 'com.squareup.okhttp3:okhttp:3.8.1'
     implementation 'com.j256.simplemagic:simplemagic:1.10'
     implementation 'org.json:json:20180130'
     compileOnly 'com.gradle.publish:plugin-publish-plugin:0.9.7'
 
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
-        exclude group: 'org.codehaus.groovy'
+        exclude(group: 'org.codehaus.groovy')
     }
+    testCompile(group: "org.testfx", name: "testfx-core", version: "4.0.13-alpha")
+    testCompile(group: "org.testfx", name: "testfx-spock", version: "4.0.13-alpha")
+    testCompile(gradleTestKit())
 }
 
 gradlePlugin {
@@ -61,3 +65,17 @@ pluginBundle {
 }
 
 shadowJar.classifier = ''
+
+task createPluginClasspath {
+    def outputDir = file("${buildDir}/resources/test")
+
+    inputs.files sourceSets.test.runtimeClasspath
+    outputs.dir outputDir
+
+    doLast {
+        outputDir.mkdirs()
+        file("${outputDir}/plugin-classpath.txt").text = sourceSets.test.runtimeClasspath.join('\n',)
+    }
+}
+
+test.dependsOn(createPluginClasspath)
