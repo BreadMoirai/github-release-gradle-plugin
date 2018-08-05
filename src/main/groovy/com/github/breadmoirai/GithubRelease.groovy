@@ -30,19 +30,19 @@ class GithubRelease implements Runnable {
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8")
 
-    private final String owner
-    private final String repo
-    private final String authorization
-    private final String tagName
-    private final String targetCommitish
-    private final String releaseName
-    private final String body
+    private final CharSequence owner
+    private final CharSequence repo
+    private final CharSequence authorization
+    private final CharSequence tagName
+    private final CharSequence targetCommitish
+    private final CharSequence releaseName
+    private final CharSequence body
     private final boolean draft
     private final boolean prerelease
     private final FileCollection releaseAssets
     private final OkHttpClient client
 
-    GithubRelease(String owner, String repo, String authorization, String tagName, String targetCommitish, String releaseName, String body, boolean draft, boolean prerelease, FileCollection releaseAssets) {
+    GithubRelease(CharSequence owner, CharSequence repo, CharSequence authorization, CharSequence tagName, CharSequence targetCommitish, CharSequence releaseName, CharSequence body, boolean draft, boolean prerelease, FileCollection releaseAssets) {
         this.owner = owner
         this.repo = repo
         this.authorization = authorization

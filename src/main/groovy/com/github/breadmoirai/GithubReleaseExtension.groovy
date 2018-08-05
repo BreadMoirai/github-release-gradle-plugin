@@ -25,13 +25,13 @@ import org.gradle.api.provider.Provider
 
 class GithubReleaseExtension {
 
-    final Property<String> owner
-    final Property<String> repo
-    final Property<String> token
-    final Property<String> tagName
-    final Property<String> targetCommitish
-    final Property<String> releaseName
-    final Property<String> body
+    final Property<CharSequence> owner
+    final Property<CharSequence> repo
+    final Property<CharSequence> token
+    final Property<CharSequence> tagName
+    final Property<CharSequence> targetCommitish
+    final Property<CharSequence> releaseName
+    final Property<CharSequence> body
     final Property<Boolean> draft
     final Property<Boolean> prerelease
 
@@ -39,43 +39,43 @@ class GithubReleaseExtension {
 
     GithubReleaseExtension(Project project) {
         final ObjectFactory objectFactory = project.objects
-        owner = objectFactory.property(String)
-        repo = objectFactory.property(String)
-        token = objectFactory.property(String)
-        tagName = objectFactory.property(String)
-        targetCommitish = objectFactory.property(String)
-        releaseName = objectFactory.property(String)
-        body = objectFactory.property(String)
+        owner = objectFactory.property(CharSequence)
+        repo = objectFactory.property(CharSequence)
+        token = objectFactory.property(CharSequence)
+        tagName = objectFactory.property(CharSequence)
+        targetCommitish = objectFactory.property(CharSequence)
+        releaseName = objectFactory.property(CharSequence)
+        body = objectFactory.property(CharSequence)
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
         releaseAssets = project.files()
     }
 
-    Provider<String> getOwnerProvider() {
+    Provider<CharSequence> getOwnerProvider() {
         return owner
     }
 
-    Provider<String> getRepoProvider() {
+    Provider<CharSequence> getRepoProvider() {
         return repo
     }
 
-    Provider<String> getTokenProvider() {
+    Provider<CharSequence> getTokenProvider() {
         return token
     }
 
-    Provider<String> getTagNameProvider() {
+    Provider<CharSequence> getTagNameProvider() {
         return tagName
     }
 
-    Provider<String> getTargetCommitishProvider() {
+    Provider<CharSequence> getTargetCommitishProvider() {
         return targetCommitish
     }
 
-    Provider<String> getReleaseNameProvider() {
+    Provider<CharSequence> getReleaseNameProvider() {
         return releaseName
     }
 
-    Provider<String> getBodyProvider() {
+    Provider<CharSequence> getBodyProvider() {
         return body
     }
 
@@ -91,31 +91,31 @@ class GithubReleaseExtension {
         return releaseAssets
     }
 
-    void setOwner(String owner) {
+    void setOwner(CharSequence owner) {
         this.owner.set(owner)
     }
 
-    void setRepo(String repo) {
+    void setRepo(CharSequence repo) {
         this.repo.set(repo)
     }
 
-    void setToken(String token) {
+    void setToken(CharSequence token) {
         this.token.set(token)
     }
 
-    void setTagName(String tagName) {
+    void setTagName(CharSequence tagName) {
         this.tagName.set(tagName)
     }
 
-    void setTargetCommitish(String targetCommitish) {
+    void setTargetCommitish(CharSequence targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
 
-    void setReleaseName(String releaseName) {
+    void setReleaseName(CharSequence releaseName) {
         this.releaseName.set(releaseName)
     }
 
-    void setBody(String body) {
+    void setBody(CharSequence body) {
         this.body.set(body)
     }
 

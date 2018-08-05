@@ -27,13 +27,13 @@ import org.gradle.api.tasks.TaskAction
 
 class GithubReleaseTask extends DefaultTask {
 
-    @Input final Provider<String> owner
-    @Input final Provider<String> repo
-    @Input final Provider<String> token
-    @Input final Provider<String> tagName
-    @Input final Provider<String> targetCommitish
-    @Input final Provider<String> releaseName
-    @Input final Provider<String> body
+    @Input final Provider<CharSequence> owner
+    @Input final Provider<CharSequence> repo
+    @Input final Provider<CharSequence> token
+    @Input final Provider<CharSequence> tagName
+    @Input final Provider<CharSequence> targetCommitish
+    @Input final Provider<CharSequence> releaseName
+    @Input final Provider<CharSequence> body
     @Input final Provider<Boolean> draft
     @Input final Provider<Boolean> prerelease
     @InputFiles final ConfigurableFileCollection releaseAssets
@@ -41,13 +41,13 @@ class GithubReleaseTask extends DefaultTask {
     GithubReleaseTask() {
         this.setGroup('publishing')
         final ObjectFactory objectFactory = project.objects
-        owner = objectFactory.property(String)
-        repo = objectFactory.property(String)
-        token = objectFactory.property(String)
-        tagName = objectFactory.property(String)
-        targetCommitish = objectFactory.property(String)
-        releaseName = objectFactory.property(String)
-        body = objectFactory.property(String)
+        owner = objectFactory.property(CharSequence)
+        repo = objectFactory.property(CharSequence)
+        token = objectFactory.property(CharSequence)
+        tagName = objectFactory.property(CharSequence)
+        targetCommitish = objectFactory.property(CharSequence)
+        releaseName = objectFactory.property(CharSequence)
+        body = objectFactory.property(CharSequence)
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
         releaseAssets = project.files()
@@ -55,22 +55,21 @@ class GithubReleaseTask extends DefaultTask {
 
     @TaskAction
     void publishRelease() {
-        String tag = tagName.getOrElse("v$project.version")
-        String tar = targetCommitish.getOrElse('master')
-        String rel = releaseName.getOrElse(tag)
-        String bod = this.body.getOrElse('')
-        String group = project.group.toString()
-        String own = this.owner.getOrElse(group.substring(group.lastIndexOf('.') + 1))
-        String rep = this.repo.getOrElse(project.name) ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
-        boolean dra = draft.getOrElse(false)
-        boolean pre = prerelease.getOrElse(false)
-        String tok = this.token.getOrNull()
-        String auth
-        if (tok != null) {
+        CharSequence tag = this.tagName.get()
+        CharSequence tar = this.targetCommitish.get()
+        CharSequence rel = this.releaseName.get()
+        CharSequence bod = this.body.get()
+        CharSequence own = this.owner.get()
+        CharSequence rep = this.repo.get()
+        boolean dra = this.draft.get()
+        boolean pre = this.prerelease.get()
+        CharSequence tok = this.token.get()
+        CharSequence auth
+        if (tok.length() != 0) {
             auth = "Token $tok"
         } else {
             GithubLoginApp.start()
-            Optional<String> wait = GithubLoginApp.getApp().waitForResult()
+            Optional<CharSequence> wait = GithubLoginApp.getApp().waitForResult()
             if (!wait.isPresent()) {
                 println "githubRelease: TASK CANCELLED"
                 return
@@ -83,59 +82,59 @@ class GithubReleaseTask extends DefaultTask {
         new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets).run()
     }
 
-    void setOwner(Provider<String> owner) {
+    void setOwner(Provider<CharSequence> owner) {
         this.owner.set(owner)
     }
 
-    void setOwner(String owner) {
+    void setOwner(CharSequence owner) {
         this.owner.set(owner)
     }
 
-    void setRepo(Provider<String> repo) {
+    void setRepo(Provider<CharSequence> repo) {
         this.repo.set(repo)
     }
 
-    void setRepo(String repo) {
+    void setRepo(CharSequence repo) {
         this.repo.set(repo)
     }
 
-    void setToken(Provider<String> token) {
+    void setToken(Provider<CharSequence> token) {
         this.token.set(token)
     }
 
-    void setToken(String repo) {
+    void setToken(CharSequence repo) {
         this.token.set(repo)
     }
 
-    void setTagName(Provider<String> tagName) {
+    void setTagName(Provider<CharSequence> tagName) {
         this.tagName.set(tagName)
     }
 
-    void setTagName(String tagName) {
+    void setTagName(CharSequence tagName) {
         this.tagName.set(tagName)
     }
 
-    void setTargetCommitish(Provider<String> targetCommitish) {
+    void setTargetCommitish(Provider<CharSequence> targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
 
-    void setTargetCommitish(String targetCommitish) {
+    void setTargetCommitish(CharSequence targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
 
-    void setReleaseName(Provider<String> releaseName) {
+    void setReleaseName(Provider<CharSequence> releaseName) {
         this.releaseName.set(releaseName)
     }
 
-    void setReleaseName(String releaseName) {
+    void setReleaseName(CharSequence releaseName) {
         this.releaseName.set(releaseName)
     }
 
-    void setBody(Provider<String> body) {
+    void setBody(Provider<CharSequence> body) {
         this.body.set(body)
     }
 
-    void setBody(String body) {
+    void setBody(CharSequence body) {
         this.body.set(body)
     }
 
