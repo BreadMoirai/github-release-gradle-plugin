@@ -36,17 +36,17 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
     private final Provider<CharSequence> authorization
     private final Provider<CharSequence> tag
 
-    private Provider<CharSequence> currentReleaseCommit
+    private Provider<CharSequence> currentCommit
     private Provider<CharSequence> lastReleaseCommit
     private Provider<List<CharSequence>> options
 
-    ChangeLogProvider(GithubReleaseTask task) {
-        this.owner = owner
-        this.repo = repo
-        this.authorization = authorization
-        this.tag = tag
-        setCurrentReleaseCommit "HEAD"
-        setLastReleaseCommit this.&getLastReleaseCommit
+    ChangeLogProvider(GithubReleaseExtension extension) {
+        this.owner = extension.ownerProvider
+        this.repo = extension.repoProvider
+        this.authorization = extension.authorization
+        this.tag = extension.tagNameProvider
+        setCurrentCommit "HEAD"
+        setLastCommit this.&getLastReleaseCommit
         setOptions(["--format=oneline", "--abbrev-commit", "--max-count=50"])
     }
 
@@ -92,7 +92,7 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
     @Override
     CharSequence getOrNull() {
         log.info ':githubRelease Generating Release Body with Commit History'
-        CharSequence current = currentReleaseCommit.get()
+        CharSequence current = currentCommit.get()
         CharSequence last = lastReleaseCommit.get()
         List<String> opts = options.get()*.toString()
         List<String> cmds = ["git", "rev-list", *opts, last + ".." + current]
@@ -104,38 +104,65 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
                 .outputUTF8()
     }
 
-    void setCurrentReleaseCommit(Provider<CharSequence> currentReleaseCommit) {
-        this.currentReleaseCommit = currentReleaseCommit
+    void setCurrentCommit(Provider<? extends CharSequence> currentCommit) {
+        this.currentCommit = currentCommit
+    }
+    void currentCommit(Provider<? extends CharSequence> currentCommit) {
+        this.currentCommit = currentCommit
     }
 
-    void setLastReleaseCommit(Provider<CharSequence> lastReleaseCommit) {
-        this.lastReleaseCommit = lastReleaseCommit
+    void setLastCommit(Provider<? extends CharSequence> lastCommit) {
+        this.lastCommit = lastCommit
+    }
+    void lastCommit(Provider<? extends CharSequence> lastCommit) {
+        this.lastCommit = lastCommit
     }
 
     void setOptions(Provider<List<CharSequence>> options) {
         this.options = options
     }
-
-    void setCurrentReleaseCommit(Callable<CharSequence> currentReleaseCommit) {
-        setCurrentReleaseCommit new TypedDefaultProvider<>(CharSequence.class, currentReleaseCommit)
+    void options(Provider<List<CharSequence>> options) {
+        this.options = options
     }
 
-    void setLastReleaseCommit(Callable<CharSequence> lastReleaseCommit) {
-        setLastReleaseCommit new TypedDefaultProvider<>(CharSequence.class, lastReleaseCommit)
+    void setCurrentCommit(Callable<? extends CharSequence> currentCommit) {
+        setCurrentCommit new TypedDefaultProvider<>(CharSequence.class, currentCommit)
+    }
+    void currentCommit(Callable<? extends CharSequence> currentCommit) {
+        setCurrentCommit new TypedDefaultProvider<>(CharSequence.class, currentCommit)
+    }
+
+    void setLastCommit(Callable<? extends CharSequence> lastCommit) {
+        setLastCommit new TypedDefaultProvider<>(CharSequence.class, lastCommit)
+    }
+    void lastCommit(Callable<? extends CharSequence> lastCommit) {
+        setLastCommit new TypedDefaultProvider<>(CharSequence.class, lastCommit)
     }
 
     void setOptions(Callable<List<CharSequence>> options) {
         setOptions new TypedDefaultProvider<>(CharSequence.class, options)
     }
-    void setCurrentReleaseCommit(CharSequence currentReleaseCommit) {
-        setCurrentReleaseCommit {currentReleaseCommit}
+    void options(Callable<List<CharSequence>> options) {
+        setOptions new TypedDefaultProvider<>(CharSequence.class, options)
+    }
+    void setCurrentCommit(CharSequence currentCommit) {
+        setCurrentCommit {currentCommit}
+    }
+    void currentCommit(CharSequence currentCommit) {
+        setCurrentCommit {currentCommit}
     }
 
-    void setLastReleaseCommit(CharSequence lastReleaseCommit) {
-        setLastReleaseCommit {lastReleaseCommit}
+    void setLastCommit(CharSequence lastCommit) {
+        setLastCommit {lastCommit}
+    }
+    void lastCommit(CharSequence lastCommit) {
+        setLastCommit {lastCommit}
     }
 
     void setOptions(List<CharSequence> options) {
+        setOptions {options}
+    }
+    void options(List<CharSequence> options) {
         setOptions {options}
     }
 }

@@ -16,6 +16,7 @@
 
 package com.github.breadmoirai
 
+
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
@@ -23,7 +24,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 
 import java.util.concurrent.Callable
-
 /**
  * An extension for the {@link com.github.breadmoirai.GithubReleasePlugin}
  * <p> See Default Values below </p>
@@ -84,11 +84,13 @@ class GithubReleaseExtension {
     final Property<CharSequence> targetCommitish
     final Property<CharSequence> releaseName
     final Property<CharSequence> body
-    final Property<Boolean> draft
-    final Property<Boolean> prerelease
+    final Property<? extends Boolean> draft
+    final Property<? extends Boolean> prerelease
     final ConfigurableFileCollection releaseAssets
+    private final Project project
 
     GithubReleaseExtension(Project project) {
+        this.project = project
         final ObjectFactory objectFactory = project.objects
         owner = objectFactory.property(CharSequence)
         repo = objectFactory.property(CharSequence)
@@ -100,6 +102,12 @@ class GithubReleaseExtension {
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
         releaseAssets = project.files()
+    }
+
+    Provider<CharSequence> changelog(@DelegatesTo(ChangeLogProvider) final Closure closure) {
+        def c = new ChangeLogProvider(this)
+        c.with closure
+        return c
     }
 
     Provider<CharSequence> getOwnerProvider() {
@@ -145,124 +153,217 @@ class GithubReleaseExtension {
     void setOwner(CharSequence owner) {
         this.owner.set(owner)
     }
-
-    void setOwner(Provider<CharSequence> owner) {
+    void owner(CharSequence owner) {
         this.owner.set(owner)
     }
 
-    void setOwner(Callable<CharSequence> owner) {
+    void setOwner(Provider<? extends CharSequence> owner) {
+        this.owner.set(owner)
+    }
+    void owner(Provider<? extends CharSequence> owner) {
+        this.owner.set(owner)
+    }
+
+    void setOwner(Callable<? extends CharSequence> owner) {
+        this.owner.set(new TypedDefaultProvider<>(CharSequence.class, owner))
+    }
+    void owner(Callable<? extends CharSequence> owner) {
         this.owner.set(new TypedDefaultProvider<>(CharSequence.class, owner))
     }
 
     void setRepo(CharSequence repo) {
         this.repo.set(repo)
     }
-
-    void setRepo(Provider<CharSequence> repo) {
+    void repo(CharSequence repo) {
         this.repo.set(repo)
     }
 
-    void setRepo(Callable<CharSequence> repo) {
+    void setRepo(Provider<? extends CharSequence> repo) {
+        this.repo.set(repo)
+    }
+    void repo(Provider<? extends CharSequence> repo) {
+        this.repo.set(repo)
+    }
+
+    void setRepo(Callable<? extends CharSequence> repo) {
+        this.repo.set(new TypedDefaultProvider<>(CharSequence.class, repo))
+    }
+    void repo(Callable<? extends CharSequence> repo) {
         this.repo.set(new TypedDefaultProvider<>(CharSequence.class, repo))
     }
 
     void setToken(CharSequence token) {
         this.authorization.set("Token $token")
     }
+    void token(CharSequence token) {
+        this.authorization.set("Token $token")
+    }
 
-    void setToken(Provider<CharSequence> token) {
+    void setToken(Provider<? extends CharSequence> token) {
+        this.authorization.set(token.map { "Token $it" })
+    }
+    void token(Provider<? extends CharSequence> token) {
         this.authorization.set(token.map { "Token $it" })
     }
 
-    void setToken(Callable<CharSequence> token) {
+    void setToken(Callable<? extends CharSequence> token) {
+        this.authorization.set(new TypedDefaultProvider(CharSequence.class, token).map { "Token $it" })
+    }
+    void token(Callable<? extends CharSequence> token) {
         this.authorization.set(new TypedDefaultProvider(CharSequence.class, token).map { "Token $it" })
     }
 
     void setAuthorization(CharSequence authorization) {
         this.authorization.set(authorization)
     }
-
-    void setAuthorization(Provider<CharSequence> authorization) {
+    void authorization(CharSequence authorization) {
         this.authorization.set(authorization)
     }
 
-    void setAuthorization(Callable<CharSequence> authorization) {
+    void setAuthorization(Provider<? extends CharSequence> authorization) {
+        this.authorization.set(authorization)
+    }
+    void authorization(Provider<? extends CharSequence> authorization) {
+        this.authorization.set(authorization)
+    }
+
+    void setAuthorization(Callable<? extends CharSequence> authorization) {
+        this.authorization.set(new TypedDefaultProvider<>(CharSequence.class, authorization))
+    }
+    void authorization(Callable<? extends CharSequence> authorization) {
         this.authorization.set(new TypedDefaultProvider<>(CharSequence.class, authorization))
     }
 
     void setTagName(CharSequence tagName) {
         this.tagName.set(tagName)
     }
-
-    void setTagName(Provider<CharSequence> tagName) {
+    void tagName(CharSequence tagName) {
         this.tagName.set(tagName)
     }
 
-    void setTagName(Callable<CharSequence> tagName) {
+    void setTagName(Provider<? extends CharSequence> tagName) {
+        this.tagName.set(tagName)
+    }
+    void tagName(Provider<? extends CharSequence> tagName) {
+        this.tagName.set(tagName)
+    }
+
+    void setTagName(Callable<? extends CharSequence> tagName) {
+        this.tagName.set(new TypedDefaultProvider<>(CharSequence.class, tagName))
+    }
+    void tagName(Callable<? extends CharSequence> tagName) {
         this.tagName.set(new TypedDefaultProvider<>(CharSequence.class, tagName))
     }
 
     void setTargetCommitish(CharSequence targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
-
-    void setTargetCommitish(Provider<CharSequence> targetCommitish) {
+    void targetCommitish(CharSequence targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
 
-    void setTargetCommitish(Callable<CharSequence> targetCommitish) {
+    void setTargetCommitish(Provider<? extends CharSequence> targetCommitish) {
+        this.targetCommitish.set(targetCommitish)
+    }
+    void targetCommitish(Provider<? extends CharSequence> targetCommitish) {
+        this.targetCommitish.set(targetCommitish)
+    }
+
+    void setTargetCommitish(Callable<? extends CharSequence> targetCommitish) {
+        this.targetCommitish.set(new TypedDefaultProvider<>(CharSequence.class, targetCommitish))
+    }
+    void targetCommitish(Callable<? extends CharSequence> targetCommitish) {
         this.targetCommitish.set(new TypedDefaultProvider<>(CharSequence.class, targetCommitish))
     }
 
     void setReleaseName(CharSequence releaseName) {
         this.releaseName.set(releaseName)
     }
-
-    void setReleaseName(Provider<CharSequence> releaseName) {
+    void releaseName(CharSequence releaseName) {
         this.releaseName.set(releaseName)
     }
 
-    void setReleaseName(Callable<CharSequence> releaseName) {
+    void setReleaseName(Provider<? extends CharSequence> releaseName) {
+        this.releaseName.set(releaseName)
+    }
+    void releaseName(Provider<? extends CharSequence> releaseName) {
+        this.releaseName.set(releaseName)
+    }
+
+    void setReleaseName(Callable<? extends CharSequence> releaseName) {
+        this.releaseName.set(new TypedDefaultProvider<>(CharSequence.class, releaseName))
+    }
+    void releaseName(Callable<? extends CharSequence> releaseName) {
         this.releaseName.set(new TypedDefaultProvider<>(CharSequence.class, releaseName))
     }
 
     void setBody(CharSequence body) {
         this.body.set(body)
     }
-
-    void setBody(Provider<CharSequence> body) {
+    void body(CharSequence body) {
         this.body.set(body)
     }
 
-    void setBody(Callable<CharSequence> body) {
+    void setBody(Provider<? extends CharSequence> body) {
+        this.body.set(body)
+    }
+    void body(Provider<? extends CharSequence> body) {
+        this.body.set(body)
+    }
+
+    void setBody(Callable<? extends CharSequence> body) {
+        this.body.set(new TypedDefaultProvider<>(CharSequence.class, body))
+    }
+    void body(Callable<? extends CharSequence> body) {
         this.body.set(new TypedDefaultProvider<>(CharSequence.class, body))
     }
 
     void setDraft(boolean draft) {
         this.draft.set(draft)
     }
-
-    void setDraft(Provider<Boolean> draft) {
+    void draft(boolean draft) {
         this.draft.set(draft)
     }
 
-    void setDraft(Callable<Boolean> draft) {
+    void setDraft(Provider<? extends Boolean> draft) {
+        this.draft.set(draft)
+    }
+    void draft(Provider<? extends Boolean> draft) {
+        this.draft.set(draft)
+    }
+
+    void setDraft(Callable<? extends Boolean> draft) {
+        this.draft.set(new TypedDefaultProvider<>(Boolean.class, draft))
+    }
+    void draft(Callable<? extends Boolean> draft) {
         this.draft.set(new TypedDefaultProvider<>(Boolean.class, draft))
     }
 
     void setPrerelease(boolean prerelease) {
         this.prerelease.set(prerelease)
     }
-
-    void setPrerelease(Provider<Boolean> prerelease) {
+    void prerelease(boolean prerelease) {
         this.prerelease.set(prerelease)
     }
 
-    void setPrerelease(Callable<Boolean> prerelease) {
+    void setPrerelease(Provider<? extends Boolean> prerelease) {
+        this.prerelease.set(prerelease)
+    }
+    void prerelease(Provider<? extends Boolean> prerelease) {
+        this.prerelease.set(prerelease)
+    }
+
+    void setPrerelease(Callable<? extends Boolean> prerelease) {
+        this.prerelease.set(new TypedDefaultProvider<>(Boolean.class, prerelease))
+    }
+    void prerelease(Callable<? extends Boolean> prerelease) {
         this.prerelease.set(new TypedDefaultProvider<>(Boolean.class, prerelease))
     }
 
     void setReleaseAssets(Object... assets) {
+        this.releaseAssets.setFrom(assets)
+    }
+    void releaseAssets(Object... assets) {
         this.releaseAssets.setFrom(assets)
     }
 
