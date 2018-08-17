@@ -19,16 +19,23 @@ package com.github.breadmoirai
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
+
+import java.util.concurrent.Callable
 
 class GithubReleasePlugin implements Plugin<Project> {
 
+    public static boolean infoEnabled = false
+
     @Override
     void apply(Project project) {
+        infoEnabled = project.logger.infoEnabled
+
         def ext = project.extensions.create('githubRelease', GithubReleaseExtension, project)
 
         project.tasks.create('githubRelease', GithubReleaseTask) {
             it.with {
-                setToken ext.tokenProvider
+                setAuthorization ext.authorizationProvider
                 setOwner ext.ownerProvider
                 setRepo ext.repoProvider
                 setTagName ext.tagNameProvider
@@ -43,27 +50,42 @@ class GithubReleasePlugin implements Plugin<Project> {
 
         project.afterEvaluate {
             def self = project.plugins.findPlugin(GithubReleasePlugin)
+
             if (self) {
                 GithubReleaseExtension e = project.extensions.getByType(GithubReleaseExtension)
-                setOrElse(e.owner) {
+                setOrElse(e.owner, CharSequence.class) {
                     def group = project.group.toString()
                     group.substring(group.lastIndexOf('.') + 1)
                 }
-                setOrElse(e.repo) {
+                setOrElse(e.repo, CharSequence.class) {
                     project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
                 }
-                setOrElse(e.tagName) { "v${project.version}" }
-                setOrElse(e.targetCommitish) { 'master' }
-                setOrElse(e.releaseName) { "${project.version}" }
-                setOrElse(e.body) { "" }
-                setOrElse(e.draft) { false }
-                setOrElse(e.prerelease) { false }
-                setOrElse(e.token) { "" }
+                setOrElse(e.tagName, CharSequence.class) { "v${project.version}" }
+                setOrElse(e.targetCommitish, CharSequence.class) { 'master' }
+                setOrElse(e.releaseName, CharSequence.class) { "v${project.version}" }
+                setOrElse(e.body, CharSequence.class, new ChangeLogProvider())
+                setOrElse(e.draft, Boolean.class) { false }
+                setOrElse(e.prerelease, Boolean.class) { false }
+                setOrElse(e.authorization, CharSequence.class) {
+                    GithubLoginApp.start()
+                    GithubLoginApp.waitForResult().map{
+                        "Basic $it"
+                    }.orElse(null)
+                }
             }
+
         }
     }
 
-    private static <P, V extends P> void setOrElse(Property<P> prop, Closure<V> value) {
-        if (!prop.isPresent()) prop.set(value())
+    static def <T> void setOrElse(Property<T> prop, Class<T> type, Callable<T> value) {
+        if (!prop.isPresent()) {
+            prop.set(new TypedDefaultProvider<T>(type, value))
+        }
+    }
+
+    static def <T> void setOrElse(Property<T> prop, Class<T> type, Provider<T> value) {
+        if (!prop.isPresent()) {
+            prop.set(new TypedDefaultProvider<T>(type, value))
+        }
     }
 }

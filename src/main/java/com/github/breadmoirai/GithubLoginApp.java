@@ -16,8 +16,11 @@
 package com.github.breadmoirai;
 
 import javafx.application.Application;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -42,23 +45,52 @@ import java.util.concurrent.ExecutionException;
 
 public class GithubLoginApp extends Application {
 
-    private static GithubLoginApp app;
+    private static Property<GithubLoginApp> INSTANCE = new SimpleObjectProperty<>();
+
+    /**
+     * Starts the login dialog asynchronously. Does not block.
+     */
+    public static void start() {
+        new Thread(() -> Application.launch(GithubLoginApp.class)).start();
+    }
+
+    /**
+     * Waits for the result from the app. Blocking.
+     * @return an Optional containing the base64 encoded value of the username and password
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    public static Optional<String> waitForResult() throws ExecutionException, InterruptedException {
+        final GithubLoginApp firstValue = INSTANCE.getValue();
+        if (firstValue == null) {
+            final CompletableFuture<GithubLoginApp> future = new CompletableFuture<>();
+            INSTANCE.addListener(new ChangeListener<GithubLoginApp>() {
+                @Override
+                public void changed(ObservableValue<? extends GithubLoginApp> observable, GithubLoginApp oldValue, GithubLoginApp newValue) {
+                    if (newValue != null) {
+                        future.complete(newValue);
+                        observable.removeListener(this);
+                    }
+                }
+            });
+            final GithubLoginApp secondValue = INSTANCE.getValue();
+            if (secondValue != null) {
+                future.complete(secondValue);
+            }
+            return future.get().future.get();
+        } else {
+            return firstValue.future.get();
+        }
+    }
+
     private final CompletableFuture<Optional<String>> future = new CompletableFuture<>();
 
-    public static void start() {
-        Application.launch();
-    }
-
-    public static GithubLoginApp getApp() {
-        return app;
-    }
-
     public GithubLoginApp() {
-        app = this;
+       GithubLoginApp.INSTANCE.setValue(this);
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         primaryStage.setTitle("Github Login");
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -124,15 +156,7 @@ public class GithubLoginApp extends Application {
         primaryStage.show();
     }
 
-    public Optional<String> waitForResult() throws ExecutionException, InterruptedException {
-        return future.get();
-    }
-
-    CompletableFuture<Optional<String>> getFuture() {
-        return future;
-    }
-
-    public ChangeListener<? super String> getValidationListener(StringProperty other, Button button) {
+    private ChangeListener<? super String> getValidationListener(StringProperty other, Button button) {
         return (observable, oldValue, newValue) -> {
             if (newValue == null || newValue.isEmpty() || other.getValueSafe().isEmpty()) {
                 button.setDisable(true);

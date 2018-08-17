@@ -34,7 +34,8 @@ dependencies {
     implementation 'org.codehaus.groovy:groovy-all:2.4.12'
     implementation 'com.squareup.okhttp3:okhttp:3.8.1'
     implementation 'com.j256.simplemagic:simplemagic:1.10'
-    implementation 'org.json:json:20180130'
+    implementation 'org.zeroturnaround:zt-exec:1.10'
+
     compileOnly 'com.gradle.publish:plugin-publish-plugin:0.9.7'
 
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {

@@ -25,11 +25,13 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
 
+import java.util.concurrent.Callable
+
 class GithubReleaseTask extends DefaultTask {
 
     @Input final Provider<CharSequence> owner
     @Input final Provider<CharSequence> repo
-    @Input final Provider<CharSequence> token
+    @Input final Provider<CharSequence> authorization
     @Input final Provider<CharSequence> tagName
     @Input final Provider<CharSequence> targetCommitish
     @Input final Provider<CharSequence> releaseName
@@ -43,7 +45,7 @@ class GithubReleaseTask extends DefaultTask {
         final ObjectFactory objectFactory = project.objects
         owner = objectFactory.property(CharSequence)
         repo = objectFactory.property(CharSequence)
-        token = objectFactory.property(CharSequence)
+        authorization = objectFactory.property(CharSequence)
         tagName = objectFactory.property(CharSequence)
         targetCommitish = objectFactory.property(CharSequence)
         releaseName = objectFactory.property(CharSequence)
@@ -63,99 +65,134 @@ class GithubReleaseTask extends DefaultTask {
         CharSequence rep = this.repo.get()
         boolean dra = this.draft.get()
         boolean pre = this.prerelease.get()
-        CharSequence tok = this.token.get()
-        CharSequence auth
-        if (tok.length() != 0) {
-            auth = "Token $tok"
-        } else {
-            GithubLoginApp.start()
-            Optional<CharSequence> wait = GithubLoginApp.getApp().waitForResult()
-            if (!wait.isPresent()) {
-                println "githubRelease: TASK CANCELLED"
-                return
-            } else {
-                auth = "Basic ${wait.get()}"
-            }
-        }
+        CharSequence auth = this.authorization.get()
         FileCollection releaseAssets = this.releaseAssets
 
         new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets).run()
-    }
-
-    void setOwner(Provider<CharSequence> owner) {
-        this.owner.set(owner)
     }
 
     void setOwner(CharSequence owner) {
         this.owner.set(owner)
     }
 
-    void setRepo(Provider<CharSequence> repo) {
-        this.repo.set(repo)
+    void setOwner(Provider<CharSequence> owner) {
+        this.owner.set(owner)
+    }
+
+    void setOwner(Callable<CharSequence> owner) {
+        this.owner.set(new TypedDefaultProvider<>(CharSequence.class, owner))
     }
 
     void setRepo(CharSequence repo) {
         this.repo.set(repo)
     }
 
+    void setRepo(Provider<CharSequence> repo) {
+        this.repo.set(repo)
+    }
+
+    void setRepo(Callable<CharSequence> repo) {
+        this.repo.set(new TypedDefaultProvider<>(CharSequence.class, repo))
+    }
+
+    void setToken(CharSequence token) {
+        this.authorization.set("Token $token")
+    }
+
     void setToken(Provider<CharSequence> token) {
-        this.token.set(token)
+        this.authorization.set(token.map { "Token $it" })
     }
 
-    void setToken(CharSequence repo) {
-        this.token.set(repo)
+    void setToken(Callable<CharSequence> token) {
+        this.authorization.set(new TypedDefaultProvider(CharSequence.class, token).map { "Token $it" })
     }
 
-    void setTagName(Provider<CharSequence> tagName) {
-        this.tagName.set(tagName)
+    void setAuthorization(CharSequence authorization) {
+        this.authorization.set(authorization)
+    }
+
+    void setAuthorization(Provider<CharSequence> authorization) {
+        this.authorization.set(authorization)
+    }
+
+    void setAuthorization(Callable<CharSequence> authorization) {
+        this.authorization.set(new TypedDefaultProvider<>(CharSequence.class, authorization))
     }
 
     void setTagName(CharSequence tagName) {
         this.tagName.set(tagName)
     }
 
-    void setTargetCommitish(Provider<CharSequence> targetCommitish) {
-        this.targetCommitish.set(targetCommitish)
+    void setTagName(Provider<CharSequence> tagName) {
+        this.tagName.set(tagName)
+    }
+
+    void setTagName(Callable<CharSequence> tagName) {
+        this.tagName.set(new TypedDefaultProvider<>(CharSequence.class, tagName))
     }
 
     void setTargetCommitish(CharSequence targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
 
-    void setReleaseName(Provider<CharSequence> releaseName) {
-        this.releaseName.set(releaseName)
+    void setTargetCommitish(Provider<CharSequence> targetCommitish) {
+        this.targetCommitish.set(targetCommitish)
+    }
+
+    void setTargetCommitish(Callable<CharSequence> targetCommitish) {
+        this.targetCommitish.set(new TypedDefaultProvider<>(CharSequence.class, targetCommitish))
     }
 
     void setReleaseName(CharSequence releaseName) {
         this.releaseName.set(releaseName)
     }
 
-    void setBody(Provider<CharSequence> body) {
-        this.body.set(body)
+    void setReleaseName(Provider<CharSequence> releaseName) {
+        this.releaseName.set(releaseName)
+    }
+
+    void setReleaseName(Callable<CharSequence> releaseName) {
+        this.releaseName.set(new TypedDefaultProvider<>(CharSequence.class, releaseName))
     }
 
     void setBody(CharSequence body) {
         this.body.set(body)
     }
 
+    void setBody(Provider<CharSequence> body) {
+        this.body.set(body)
+    }
+
+    void setBody(Callable<CharSequence> body) {
+        this.body.set(new TypedDefaultProvider<>(CharSequence.class, body))
+    }
+
+    void setDraft(boolean draft) {
+        this.draft.set(draft)
+    }
+
     void setDraft(Provider<Boolean> draft) {
         this.draft.set(draft)
     }
 
-    void setDraft(Boolean draft) {
-        this.draft.set(draft)
+    void setDraft(Callable<Boolean> draft) {
+        this.draft.set(new TypedDefaultProvider<>(Boolean.class, draft))
+    }
+
+    void setPrerelease(boolean prerelease) {
+        this.prerelease.set(prerelease)
     }
 
     void setPrerelease(Provider<Boolean> prerelease) {
         this.prerelease.set(prerelease)
     }
 
-    void setPrerelease(Boolean prerelease) {
-        this.prerelease.set(prerelease)
+    void setPrerelease(Callable<Boolean> prerelease) {
+        this.prerelease.set(new TypedDefaultProvider<>(Boolean.class, prerelease))
     }
 
-    void setReleaseAssets(Object... releaseAssets) {
-        this.releaseAssets.setFrom(releaseAssets)
+    void setReleaseAssets(Object... assets) {
+        this.releaseAssets.setFrom(assets)
     }
 
 }
