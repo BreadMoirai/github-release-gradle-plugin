@@ -57,15 +57,42 @@ class GithubReleaseTask extends DefaultTask {
 
     @TaskAction
     void publishRelease() {
-        CharSequence tag = this.tagName.get()
-        CharSequence tar = this.targetCommitish.get()
-        CharSequence rel = this.releaseName.get()
-        CharSequence bod = this.body.get()
-        CharSequence own = this.owner.get()
-        CharSequence rep = this.repo.get()
-        boolean dra = this.draft.get()
-        boolean pre = this.prerelease.get()
-        CharSequence auth = this.authorization.get()
+        CharSequence tag = this.tagName.getOrNull()
+        if (tag == null) {
+            throw new PropertyNotSetException('tagName')
+        }
+        CharSequence tar = this.targetCommitish.getOrNull()
+        if (tar == null) {
+            throw new PropertyNotSetException('targetCommitish')
+        }
+        CharSequence rel = this.releaseName.getOrNull()
+        if (rel == null) {
+            throw new PropertyNotSetException('releaseName')
+        }
+        CharSequence bod = this.body.getOrNull()
+        if (bod == null) {
+            throw new PropertyNotSetException('body')
+        }
+        CharSequence own = this.owner.getOrNull()
+        if (own == null) {
+            throw new PropertyNotSetException('owner')
+        }
+        CharSequence rep = this.repo.getOrNull()
+        if (rep == null) {
+            throw new PropertyNotSetException('repo')
+        }
+        Boolean dra = this.draft.getOrNull()
+        if (dra == null) {
+            throw new PropertyNotSetException('draft')
+        }
+        Boolean pre = this.prerelease.getOrNull()
+        if (pre == null) {
+            throw new PropertyNotSetException('prerelease')
+        }
+        CharSequence auth = this.authorization.getOrNull()
+        if (auth == null) {
+            throw new PropertyNotSetException('authorization')
+        }
         FileCollection releaseAssets = this.releaseAssets
 
         new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets).run()

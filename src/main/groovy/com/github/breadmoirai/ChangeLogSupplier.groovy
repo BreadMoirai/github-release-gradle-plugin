@@ -19,7 +19,6 @@ package com.github.breadmoirai
 import groovy.json.JsonSlurper
 import okhttp3.OkHttpClient
 import okhttp3.Response
-import org.gradle.api.internal.provider.AbstractProvider
 import org.gradle.api.provider.Provider
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -27,9 +26,9 @@ import org.zeroturnaround.exec.ProcessExecutor
 
 import java.util.concurrent.Callable
 
-class ChangeLogProvider extends AbstractProvider<CharSequence> {
+class ChangeLogSupplier implements Callable<String> {
 
-    private static final Logger log = LoggerFactory.getLogger(ChangeLogProvider.class)
+    private static final Logger log = LoggerFactory.getLogger(ChangeLogSupplier.class)
 
     private final Provider<CharSequence> owner
     private final Provider<CharSequence> repo
@@ -37,22 +36,38 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
     private final Provider<CharSequence> tag
 
     private Provider<CharSequence> currentCommit
-    private Provider<CharSequence> lastReleaseCommit
+    private Provider<CharSequence> lastCommit
     private Provider<List<CharSequence>> options
 
-    ChangeLogProvider(GithubReleaseExtension extension) {
+    ChangeLogSupplier(GithubReleaseExtension extension) {
         this.owner = extension.ownerProvider
         this.repo = extension.repoProvider
-        this.authorization = extension.authorization
+        this.authorization = extension.authorizationProvider
         this.tag = extension.tagNameProvider
         setCurrentCommit "HEAD"
-        setLastCommit this.&getLastReleaseCommit
+        setLastCommit { this.getLastReleaseCommit() }
         setOptions(["--format=oneline", "--abbrev-commit", "--max-count=50"])
     }
 
     private CharSequence getLastReleaseCommit() {
-        String releaseUrl = "https://api.github.com/repos/${this.owner.get()}/${this.repo.get()}/releases"
-        Response response = new OkHttpClient().newCall(GithubRelease.createRequestWithHeaders(authorization.get())
+        CharSequence owner = this.owner.getOrNull()
+        if (owner == null) {
+            throw new PropertyNotSetException("owner")
+        }
+        CharSequence repo = this.repo.getOrNull()
+        if (repo == null) {
+            throw new PropertyNotSetException("repo")
+        }
+        CharSequence auth = authorization.getOrNull()
+        if (auth == null) {
+            throw new PropertyNotSetException("auth")
+        }
+        CharSequence tag = this.tag.getOrNull()
+        if (tag == null) {
+            throw new PropertyNotSetException("tag")
+        }
+        String releaseUrl = "https://api.github.com/repos/$owner/$repo/releases"
+        Response response = new OkHttpClient().newCall(GithubRelease.createRequestWithHeaders(auth)
                 .url(releaseUrl)
                 .get()
                 .build()
@@ -63,7 +78,9 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
         List releases = new JsonSlurper().parse(response.body().bytes()) as List
         // find current release if exists
         String lastCommit
-        int index = releases.findIndexOf { release -> release.tag_name == tag.get() }
+        int index = releases.findIndexOf { release ->
+            release.tag_name == tag
+        }
         if (releases.isEmpty() || releases.size() > index) {
             lastCommit = new ProcessExecutor().command("git", "rev-list", "--max-parents=0", "--max-count=1", "HEAD")
                     .readOutput(true)
@@ -85,15 +102,10 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
     }
 
     @Override
-    Class<CharSequence> getType() {
-        return CharSequence.class
-    }
-
-    @Override
-    CharSequence getOrNull() {
+    String call() {
         log.info ':githubRelease Generating Release Body with Commit History'
         CharSequence current = currentCommit.get()
-        CharSequence last = lastReleaseCommit.get()
+        CharSequence last = lastCommit.get()
         List<String> opts = options.get()*.toString()
         List<String> cmds = ["git", "rev-list", *opts, last + ".." + current]
         return new ProcessExecutor()
@@ -105,22 +117,25 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
     }
 
     void setCurrentCommit(Provider<? extends CharSequence> currentCommit) {
-        this.currentCommit = currentCommit
+        this.currentCommit = new TypedDefaultProvider<>(CharSequence.class, { currentCommit.get() })
     }
+
     void currentCommit(Provider<? extends CharSequence> currentCommit) {
-        this.currentCommit = currentCommit
+        this.currentCommit = new TypedDefaultProvider<>(CharSequence.class, currentCommit)
     }
 
     void setLastCommit(Provider<? extends CharSequence> lastCommit) {
-        this.lastCommit = lastCommit
+        this.lastCommit = new TypedDefaultProvider<>(CharSequence.class, { lastCommit.get() })
     }
+
     void lastCommit(Provider<? extends CharSequence> lastCommit) {
-        this.lastCommit = lastCommit
+        this.lastCommit = new TypedDefaultProvider<>(CharSequence.class, { lastCommit.get() })
     }
 
     void setOptions(Provider<List<CharSequence>> options) {
         this.options = options
     }
+
     void options(Provider<List<CharSequence>> options) {
         this.options = options
     }
@@ -128,6 +143,7 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
     void setCurrentCommit(Callable<? extends CharSequence> currentCommit) {
         setCurrentCommit new TypedDefaultProvider<>(CharSequence.class, currentCommit)
     }
+
     void currentCommit(Callable<? extends CharSequence> currentCommit) {
         setCurrentCommit new TypedDefaultProvider<>(CharSequence.class, currentCommit)
     }
@@ -135,6 +151,7 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
     void setLastCommit(Callable<? extends CharSequence> lastCommit) {
         setLastCommit new TypedDefaultProvider<>(CharSequence.class, lastCommit)
     }
+
     void lastCommit(Callable<? extends CharSequence> lastCommit) {
         setLastCommit new TypedDefaultProvider<>(CharSequence.class, lastCommit)
     }
@@ -142,27 +159,32 @@ class ChangeLogProvider extends AbstractProvider<CharSequence> {
     void setOptions(Callable<List<CharSequence>> options) {
         setOptions new TypedDefaultProvider<>(CharSequence.class, options)
     }
+
     void options(Callable<List<CharSequence>> options) {
         setOptions new TypedDefaultProvider<>(CharSequence.class, options)
     }
+
     void setCurrentCommit(CharSequence currentCommit) {
-        setCurrentCommit {currentCommit}
+        setCurrentCommit { currentCommit }
     }
+
     void currentCommit(CharSequence currentCommit) {
-        setCurrentCommit {currentCommit}
+        setCurrentCommit { currentCommit }
     }
 
     void setLastCommit(CharSequence lastCommit) {
-        setLastCommit {lastCommit}
+        setLastCommit { lastCommit }
     }
+
     void lastCommit(CharSequence lastCommit) {
-        setLastCommit {lastCommit}
+        setLastCommit { lastCommit }
     }
 
     void setOptions(List<CharSequence> options) {
-        setOptions {options}
+        setOptions { options }
     }
+
     void options(List<CharSequence> options) {
-        setOptions {options}
+        setOptions { options }
     }
 }

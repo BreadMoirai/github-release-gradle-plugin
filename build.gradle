@@ -80,5 +80,3 @@ task createPluginClasspath {
 }
 
 test.dependsOn(createPluginClasspath)
-
-println getProperty('breadmoirai.github-release.token')

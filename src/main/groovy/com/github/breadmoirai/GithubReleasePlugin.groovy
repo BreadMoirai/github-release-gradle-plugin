@@ -19,21 +19,25 @@ package com.github.breadmoirai
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.util.concurrent.Callable
 
 class GithubReleasePlugin implements Plugin<Project> {
 
+    private final static Logger log = LoggerFactory.getLogger(GithubReleasePlugin.class)
     public static boolean infoEnabled = false
 
     @Override
     void apply(Project project) {
         infoEnabled = project.logger.infoEnabled
 
+        log.debug("Creating Extension githubRelease")
         def ext = project.extensions.create('githubRelease', GithubReleaseExtension, project)
 
         project.tasks.create('githubRelease', GithubReleaseTask) {
+            log.debug("Creating Task githubRelease")
             it.with {
                 setAuthorization ext.authorizationProvider
                 setOwner ext.ownerProvider
@@ -52,40 +56,36 @@ class GithubReleasePlugin implements Plugin<Project> {
             def self = project.plugins.findPlugin(GithubReleasePlugin)
 
             if (self) {
+                log.debug("Assigning default values for GithubReleasePlugin")
                 GithubReleaseExtension e = project.extensions.getByType(GithubReleaseExtension)
-                setOrElse(e.owner, CharSequence.class) {
+                setOrElse("owner", e.owner, CharSequence.class) {
                     def group = project.group.toString()
                     group.substring(group.lastIndexOf('.') + 1)
                 }
-                setOrElse(e.repo, CharSequence.class) {
+                setOrElse("repo", e.repo, CharSequence.class) {
                     project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
                 }
-                setOrElse(e.tagName, CharSequence.class) { "v${project.version}" }
-                setOrElse(e.targetCommitish, CharSequence.class) { 'master' }
-                setOrElse(e.releaseName, CharSequence.class) { "v${project.version}" }
-                setOrElse(e.body, CharSequence.class, new ChangeLogProvider())
-                setOrElse(e.draft, Boolean.class) { false }
-                setOrElse(e.prerelease, Boolean.class) { false }
-                setOrElse(e.authorization, CharSequence.class) {
-                    GithubLoginApp.start()
-                    GithubLoginApp.waitForResult().map{
-                        "Basic $it"
-                    }.orElse(null)
+                setOrElse("tagName", e.tagName, CharSequence.class) { "v${project.version}" }
+                setOrElse("targetCommitish", e.targetCommitish, CharSequence.class) { 'master' }
+                setOrElse("releaseName", e.releaseName, CharSequence.class) { "v${project.version}" }
+                setOrElse("draft", e.draft, Boolean.class) { false }
+                setOrElse("prerelease", e.prerelease, Boolean.class) { false }
+                setOrElse("authorization", e.authorization, CharSequence.class) {
+                    new GithubLoginApp().awaitResult().map{result -> "Basic $result"}.get()
                 }
+                setOrElse("body", e.body, CharSequence.class, new ChangeLogSupplier(e))
             }
 
         }
     }
 
-    static def <T> void setOrElse(Property<T> prop, Class<T> type, Callable<T> value) {
+    static <T> void setOrElse(String name, Property<T> prop, Class<T> type, Callable<T> value) {
         if (!prop.isPresent()) {
-            prop.set(new TypedDefaultProvider<T>(type, value))
+            println "Property['$name'] has been defaulted"
+            prop.set(new CachedProvider<T>(new TypedDefaultProvider<T>(type, value)))
+        } else {
+            println "Property['$name'] has been set"
         }
     }
 
-    static def <T> void setOrElse(Property<T> prop, Class<T> type, Provider<T> value) {
-        if (!prop.isPresent()) {
-            prop.set(new TypedDefaultProvider<T>(type, value))
-        }
-    }
 }

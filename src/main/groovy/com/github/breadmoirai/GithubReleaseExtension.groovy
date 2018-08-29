@@ -22,8 +22,11 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.util.concurrent.Callable
+
 /**
  * An extension for the {@link com.github.breadmoirai.GithubReleasePlugin}
  * <p> See Default Values below </p>
@@ -77,6 +80,8 @@ import java.util.concurrent.Callable
  */
 class GithubReleaseExtension {
 
+    private final Logger logger = LoggerFactory.getLogger(GithubReleasePlugin.class)
+
     final Property<CharSequence> owner
     final Property<CharSequence> repo
     final Property<CharSequence> authorization
@@ -84,8 +89,8 @@ class GithubReleaseExtension {
     final Property<CharSequence> targetCommitish
     final Property<CharSequence> releaseName
     final Property<CharSequence> body
-    final Property<? extends Boolean> draft
-    final Property<? extends Boolean> prerelease
+    final Property<Boolean> draft
+    final Property<Boolean> prerelease
     final ConfigurableFileCollection releaseAssets
     private final Project project
 
@@ -104,46 +109,77 @@ class GithubReleaseExtension {
         releaseAssets = project.files()
     }
 
-    Provider<CharSequence> changelog(@DelegatesTo(ChangeLogProvider) final Closure closure) {
-        def c = new ChangeLogProvider(this)
+    Callable<String> changelog(@DelegatesTo(ChangeLogSupplier) final Closure closure) {
+        def c = new ChangeLogSupplier(this)
         c.with closure
         return c
     }
 
+    Callable<String> changelog() {
+        return new ChangeLogSupplier(this)
+    }
+
     Provider<CharSequence> getOwnerProvider() {
-        return owner
+        if (logger.isDebugEnabled())
+            return new DebugProvider(logger, "owner", owner)
+        else
+            return owner
     }
 
     Provider<CharSequence> getRepoProvider() {
-        return repo
+        if (logger.isDebugEnabled())
+            return new DebugProvider(logger, "repo", repo)
+        else
+            return repo
     }
 
     Provider<CharSequence> getAuthorizationProvider() {
-        return authorization
+        if (logger.isDebugEnabled())
+            return new DebugProvider(logger, "authorization", authorization)
+        else
+            return authorization
     }
 
     Provider<CharSequence> getTagNameProvider() {
-        return tagName
+        if (logger.isDebugEnabled())
+            return new DebugProvider(logger, "tagName", tagName)
+        else
+            return tagName
     }
 
     Provider<CharSequence> getTargetCommitishProvider() {
-        return targetCommitish
+        if (logger.isDebugEnabled())
+            return new DebugProvider(logger, "targetCommitish", targetCommitish)
+        else
+            return targetCommitish
     }
 
     Provider<CharSequence> getReleaseNameProvider() {
-        return releaseName
+        if (logger.isDebugEnabled())
+            return new DebugProvider(logger, "releaseName", releaseName)
+        else
+            return releaseName
     }
 
     Provider<CharSequence> getBodyProvider() {
-        return body
+        if (logger.isDebugEnabled())
+            return new DebugProvider(logger, "body", body)
+        else
+            return body
     }
 
     Provider<Boolean> getDraftProvider() {
-        return draft
+        if (logger.isDebugEnabled())
+            return new DebugProvider(logger, "draft", draft)
+        else
+            return draft
     }
 
     Provider<Boolean> getPrereleaseProvider() {
-        return prerelease
+        if (logger.isDebugEnabled())
+            return new DebugProvider(logger, "prerelease", prerelease)
+        else
+            return prerelease
     }
 
     ConfigurableFileCollection getReleaseAssets() {
@@ -153,6 +189,7 @@ class GithubReleaseExtension {
     void setOwner(CharSequence owner) {
         this.owner.set(owner)
     }
+
     void owner(CharSequence owner) {
         this.owner.set(owner)
     }
@@ -160,6 +197,7 @@ class GithubReleaseExtension {
     void setOwner(Provider<? extends CharSequence> owner) {
         this.owner.set(owner)
     }
+
     void owner(Provider<? extends CharSequence> owner) {
         this.owner.set(owner)
     }
@@ -167,6 +205,7 @@ class GithubReleaseExtension {
     void setOwner(Callable<? extends CharSequence> owner) {
         this.owner.set(new TypedDefaultProvider<>(CharSequence.class, owner))
     }
+
     void owner(Callable<? extends CharSequence> owner) {
         this.owner.set(new TypedDefaultProvider<>(CharSequence.class, owner))
     }
@@ -174,6 +213,7 @@ class GithubReleaseExtension {
     void setRepo(CharSequence repo) {
         this.repo.set(repo)
     }
+
     void repo(CharSequence repo) {
         this.repo.set(repo)
     }
@@ -181,6 +221,7 @@ class GithubReleaseExtension {
     void setRepo(Provider<? extends CharSequence> repo) {
         this.repo.set(repo)
     }
+
     void repo(Provider<? extends CharSequence> repo) {
         this.repo.set(repo)
     }
@@ -188,6 +229,7 @@ class GithubReleaseExtension {
     void setRepo(Callable<? extends CharSequence> repo) {
         this.repo.set(new TypedDefaultProvider<>(CharSequence.class, repo))
     }
+
     void repo(Callable<? extends CharSequence> repo) {
         this.repo.set(new TypedDefaultProvider<>(CharSequence.class, repo))
     }
@@ -195,6 +237,7 @@ class GithubReleaseExtension {
     void setToken(CharSequence token) {
         this.authorization.set("Token $token")
     }
+
     void token(CharSequence token) {
         this.authorization.set("Token $token")
     }
@@ -202,6 +245,7 @@ class GithubReleaseExtension {
     void setToken(Provider<? extends CharSequence> token) {
         this.authorization.set(token.map { "Token $it" })
     }
+
     void token(Provider<? extends CharSequence> token) {
         this.authorization.set(token.map { "Token $it" })
     }
@@ -209,6 +253,7 @@ class GithubReleaseExtension {
     void setToken(Callable<? extends CharSequence> token) {
         this.authorization.set(new TypedDefaultProvider(CharSequence.class, token).map { "Token $it" })
     }
+
     void token(Callable<? extends CharSequence> token) {
         this.authorization.set(new TypedDefaultProvider(CharSequence.class, token).map { "Token $it" })
     }
@@ -216,6 +261,7 @@ class GithubReleaseExtension {
     void setAuthorization(CharSequence authorization) {
         this.authorization.set(authorization)
     }
+
     void authorization(CharSequence authorization) {
         this.authorization.set(authorization)
     }
@@ -223,6 +269,7 @@ class GithubReleaseExtension {
     void setAuthorization(Provider<? extends CharSequence> authorization) {
         this.authorization.set(authorization)
     }
+
     void authorization(Provider<? extends CharSequence> authorization) {
         this.authorization.set(authorization)
     }
@@ -230,6 +277,7 @@ class GithubReleaseExtension {
     void setAuthorization(Callable<? extends CharSequence> authorization) {
         this.authorization.set(new TypedDefaultProvider<>(CharSequence.class, authorization))
     }
+
     void authorization(Callable<? extends CharSequence> authorization) {
         this.authorization.set(new TypedDefaultProvider<>(CharSequence.class, authorization))
     }
@@ -237,6 +285,7 @@ class GithubReleaseExtension {
     void setTagName(CharSequence tagName) {
         this.tagName.set(tagName)
     }
+
     void tagName(CharSequence tagName) {
         this.tagName.set(tagName)
     }
@@ -244,6 +293,7 @@ class GithubReleaseExtension {
     void setTagName(Provider<? extends CharSequence> tagName) {
         this.tagName.set(tagName)
     }
+
     void tagName(Provider<? extends CharSequence> tagName) {
         this.tagName.set(tagName)
     }
@@ -251,6 +301,7 @@ class GithubReleaseExtension {
     void setTagName(Callable<? extends CharSequence> tagName) {
         this.tagName.set(new TypedDefaultProvider<>(CharSequence.class, tagName))
     }
+
     void tagName(Callable<? extends CharSequence> tagName) {
         this.tagName.set(new TypedDefaultProvider<>(CharSequence.class, tagName))
     }
@@ -258,6 +309,7 @@ class GithubReleaseExtension {
     void setTargetCommitish(CharSequence targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
+
     void targetCommitish(CharSequence targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
@@ -265,6 +317,7 @@ class GithubReleaseExtension {
     void setTargetCommitish(Provider<? extends CharSequence> targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
+
     void targetCommitish(Provider<? extends CharSequence> targetCommitish) {
         this.targetCommitish.set(targetCommitish)
     }
@@ -272,6 +325,7 @@ class GithubReleaseExtension {
     void setTargetCommitish(Callable<? extends CharSequence> targetCommitish) {
         this.targetCommitish.set(new TypedDefaultProvider<>(CharSequence.class, targetCommitish))
     }
+
     void targetCommitish(Callable<? extends CharSequence> targetCommitish) {
         this.targetCommitish.set(new TypedDefaultProvider<>(CharSequence.class, targetCommitish))
     }
@@ -279,6 +333,7 @@ class GithubReleaseExtension {
     void setReleaseName(CharSequence releaseName) {
         this.releaseName.set(releaseName)
     }
+
     void releaseName(CharSequence releaseName) {
         this.releaseName.set(releaseName)
     }
@@ -286,6 +341,7 @@ class GithubReleaseExtension {
     void setReleaseName(Provider<? extends CharSequence> releaseName) {
         this.releaseName.set(releaseName)
     }
+
     void releaseName(Provider<? extends CharSequence> releaseName) {
         this.releaseName.set(releaseName)
     }
@@ -293,6 +349,7 @@ class GithubReleaseExtension {
     void setReleaseName(Callable<? extends CharSequence> releaseName) {
         this.releaseName.set(new TypedDefaultProvider<>(CharSequence.class, releaseName))
     }
+
     void releaseName(Callable<? extends CharSequence> releaseName) {
         this.releaseName.set(new TypedDefaultProvider<>(CharSequence.class, releaseName))
     }
@@ -300,6 +357,7 @@ class GithubReleaseExtension {
     void setBody(CharSequence body) {
         this.body.set(body)
     }
+
     void body(CharSequence body) {
         this.body.set(body)
     }
@@ -307,6 +365,7 @@ class GithubReleaseExtension {
     void setBody(Provider<? extends CharSequence> body) {
         this.body.set(body)
     }
+
     void body(Provider<? extends CharSequence> body) {
         this.body.set(body)
     }
@@ -314,6 +373,7 @@ class GithubReleaseExtension {
     void setBody(Callable<? extends CharSequence> body) {
         this.body.set(new TypedDefaultProvider<>(CharSequence.class, body))
     }
+
     void body(Callable<? extends CharSequence> body) {
         this.body.set(new TypedDefaultProvider<>(CharSequence.class, body))
     }
@@ -321,6 +381,7 @@ class GithubReleaseExtension {
     void setDraft(boolean draft) {
         this.draft.set(draft)
     }
+
     void draft(boolean draft) {
         this.draft.set(draft)
     }
@@ -328,6 +389,7 @@ class GithubReleaseExtension {
     void setDraft(Provider<? extends Boolean> draft) {
         this.draft.set(draft)
     }
+
     void draft(Provider<? extends Boolean> draft) {
         this.draft.set(draft)
     }
@@ -335,6 +397,7 @@ class GithubReleaseExtension {
     void setDraft(Callable<? extends Boolean> draft) {
         this.draft.set(new TypedDefaultProvider<>(Boolean.class, draft))
     }
+
     void draft(Callable<? extends Boolean> draft) {
         this.draft.set(new TypedDefaultProvider<>(Boolean.class, draft))
     }
@@ -342,6 +405,7 @@ class GithubReleaseExtension {
     void setPrerelease(boolean prerelease) {
         this.prerelease.set(prerelease)
     }
+
     void prerelease(boolean prerelease) {
         this.prerelease.set(prerelease)
     }
@@ -349,6 +413,7 @@ class GithubReleaseExtension {
     void setPrerelease(Provider<? extends Boolean> prerelease) {
         this.prerelease.set(prerelease)
     }
+
     void prerelease(Provider<? extends Boolean> prerelease) {
         this.prerelease.set(prerelease)
     }
@@ -356,6 +421,7 @@ class GithubReleaseExtension {
     void setPrerelease(Callable<? extends Boolean> prerelease) {
         this.prerelease.set(new TypedDefaultProvider<>(Boolean.class, prerelease))
     }
+
     void prerelease(Callable<? extends Boolean> prerelease) {
         this.prerelease.set(new TypedDefaultProvider<>(Boolean.class, prerelease))
     }
@@ -363,6 +429,7 @@ class GithubReleaseExtension {
     void setReleaseAssets(Object... assets) {
         this.releaseAssets.setFrom(assets)
     }
+
     void releaseAssets(Object... assets) {
         this.releaseAssets.setFrom(assets)
     }

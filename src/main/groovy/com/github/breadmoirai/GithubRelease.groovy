@@ -68,7 +68,6 @@ class GithubRelease implements Runnable {
 
     @Override
     void run() {
-
         Response previousReleaseResponse = checkForPreviousRelease()
         if (previousReleaseResponse.code() == 200) {
             logger.info ':githubRelease PREVIOUS RELEASE EXISTS'
@@ -76,7 +75,6 @@ class GithubRelease implements Runnable {
         } else if (previousReleaseResponse.code() == 404) {
             logger.error ':githubRelease FAILED REPOSITORY NOT FOUND'
         }
-
 
         Response createReleaseResponse = createRelease()
         uploadAssets(createReleaseResponse)
