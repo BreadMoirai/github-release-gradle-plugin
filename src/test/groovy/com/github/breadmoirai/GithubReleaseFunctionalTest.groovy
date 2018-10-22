@@ -44,39 +44,10 @@ class GithubReleaseFunctionalTest extends Specification {
         pluginClasspath = pluginClasspathResource.readLines().collect { new File(it) }
     }
 
-    def "manual test"() {
-        given:
-//        buildFile << """
-//        plugins {
-//            id 'com.github.breadmoirai.github-release'
-//        }
-//
-//        group = 'com.github.breadmoirai'
-//        version = 'test'
-//
-//        githubRelease {
-//            repo 'github-release-gradle-plugin'
-//            body changelog {}
-//        }
-//
-//        """.stripIndent()
-
-        when:
-        def result = GradleRunner.create()
-                .withProjectDir(new File('C:\\Users\\TonTL\\Desktop\\Git\\BreadBotFramework'))
-                .withArguments('githubRelease', '--info', '--stacktrace')
-                .withPluginClasspath(pluginClasspath)
-                .build()
-
-        then:
-        result.task(":githubRelease").outcome == SUCCESS
-        println "result.output = $result.output"
-    }
-
     def "manual login test"() {
 
-        when:
-        new GithubLoginApp().awaitResult()
+//        when:
+//        new GithubLoginApp().awaitResult()
 
                 /*
                 GridPane grid = new GridPane();
@@ -145,8 +116,8 @@ class GithubReleaseFunctionalTest extends Specification {
                  */
 
 
-        then:
-        true
+//        then:
+//        true
     }
 
 

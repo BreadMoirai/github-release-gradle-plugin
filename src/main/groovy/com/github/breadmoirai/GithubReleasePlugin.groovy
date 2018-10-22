@@ -71,7 +71,8 @@ class GithubReleasePlugin implements Plugin<Project> {
                 setOrElse("draft", e.draft, Boolean.class) { false }
                 setOrElse("prerelease", e.prerelease, Boolean.class) { false }
                 setOrElse("authorization", e.authorization, CharSequence.class) {
-                    new GithubLoginApp().awaitResult().map{result -> "Basic $result"}.get()
+//                    new GithubLoginApp().awaitResult().map{result -> "Basic $result"}.get()
+                    return null
                 }
                 setOrElse("body", e.body, CharSequence.class, new ChangeLogSupplier(e))
             }

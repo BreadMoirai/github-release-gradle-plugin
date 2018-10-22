@@ -29,6 +29,7 @@ class GithubReleaseUnitTest extends Specification {
 
     }
 
+    @Ignore
     def "Test1"() {
         when:
         def c = new ChangeLogSupplier(new GithubReleaseExtension())
