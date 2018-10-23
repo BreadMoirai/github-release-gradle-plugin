@@ -99,6 +99,17 @@ class GithubReleaseExtension {
     final Property<Boolean> overwrite
     private final Project project
 
+    Provider<CharSequence> cachedOwner
+    Provider<CharSequence> cachedRepo
+    Provider<CharSequence> cachedAuthorization
+    Provider<CharSequence> cachedTagName
+    Provider<CharSequence> cachedTargetCommitish
+    Provider<CharSequence> cachedReleaseName
+    Provider<CharSequence> cachedBody
+    Provider<Boolean> cachedDraft
+    Provider<Boolean> cachedPrerelease
+    Provider<Boolean> cachedOverwrite
+
     GithubReleaseExtension(Project project) {
         this.project = project
         final ObjectFactory objectFactory = project.objects
@@ -126,66 +137,84 @@ class GithubReleaseExtension {
     }
 
     Provider<CharSequence> getOwnerProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider(logger, "owner", owner)
-        else
-            return owner
+        if (cachedOwner == null) {
+            cachedOwner = new CachedProvider<>(owner)
+            if (logger.isDebugEnabled())
+                cachedOwner = new DebugProvider<>(logger, "owner", cachedOwner)
+        }
+        return cachedOwner
     }
 
     Provider<CharSequence> getRepoProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider(logger, "repo", repo)
-        else
-            return repo
+        if (cachedRepo == null) {
+            cachedRepo = new CachedProvider<>(repo)
+            if (logger.isDebugEnabled())
+                cachedRepo = new DebugProvider(logger, "repo", cachedRepo)
+        }
+        return cachedRepo
     }
 
     Provider<CharSequence> getAuthorizationProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider(logger, "authorization", authorization)
-        else
-            return authorization
+        if (cachedAuthorization == null) {
+            cachedAuthorization = new CachedProvider<>(authorization)
+            if (logger.isDebugEnabled())
+                return new DebugProvider(logger, "authorization", cachedAuthorization)
+        }
+        return cachedAuthorization
     }
 
     Provider<CharSequence> getTagNameProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider(logger, "tagName", tagName)
-        else
-            return tagName
+        if (cachedTagName == null) {
+            cachedTagName = new CachedProvider<>(tagName)
+            if (logger.isDebugEnabled())
+                cachedTagName = new DebugProvider(logger, "tagName", cachedTagName)
+        }
+        return cachedTagName
     }
 
     Provider<CharSequence> getTargetCommitishProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider(logger, "targetCommitish", targetCommitish)
-        else
-            return targetCommitish
+        if (cachedTargetCommitish == null) {
+            cachedTargetCommitish = new CachedProvider<>(targetCommitish)
+            if (logger.isDebugEnabled())
+                return new DebugProvider(logger, "=", cachedTargetCommitish)
+            return cachedTargetCommitish
+        }
     }
 
     Provider<CharSequence> getReleaseNameProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider(logger, "releaseName", releaseName)
-        else
-            return releaseName
+        if (cachedReleaseName == null) {
+            cachedReleaseName = new CachedProvider<>(releaseName)
+            if (logger.isDebugEnabled())
+                cachedReleaseName = new DebugProvider(logger, "releaseName", cachedReleaseName)
+        }
+        return cachedReleaseName
     }
 
     Provider<CharSequence> getBodyProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider(logger, "body", body)
-        else
-            return body
+        if (cachedBody == null) {
+            cachedBody = new CachedProvider<>(body)
+            if (logger.isDebugEnabled())
+                cachedBody = new DebugProvider(logger, "body", cachedBody)
+        }
+        return cachedBody
     }
 
     Provider<Boolean> getDraftProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider(logger, "draft", draft)
-        else
-            return draft
+        if (cachedDraft == null) {
+            cachedDraft = new CachedProvider<>(draft)
+            if (logger.isDebugEnabled())
+                cachedDraft = new DebugProvider(logger, "draft", cachedDraft)
+        }
+        return cachedDraft
     }
 
     Provider<Boolean> getPrereleaseProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider(logger, "prerelease", prerelease)
-        else
-            return prerelease
+        if (cachedPrerelease == null) {
+            cachedPrerelease = new CachedProvider<>(prerelease)
+            if (logger.isDebugEnabled())
+                cachedPrerelease = new DebugProvider(logger, "prerelease", cachedPrerelease)
+        }
+        return cachedPrerelease
     }
 
     ConfigurableFileCollection getReleaseAssets() {
@@ -193,10 +222,12 @@ class GithubReleaseExtension {
     }
 
     Provider<Boolean> getOverwriteProvider() {
-        if (logger.isDebugEnabled())
-            return new DebugProvider<Boolean>(logger, "overwrite", overwrite)
-        else
-            return overwrite
+        if (cachedOverwrite == null) {
+            cachedOverwrite = new CachedProvider<>(overwrite)
+            if (logger.isDebugEnabled())
+                cachedOverwrite = new DebugProvider(logger, "overwrite", cachedOverwrite)
+        }
+        return cachedOverwrite
     }
 
     void setOwner(CharSequence owner) {

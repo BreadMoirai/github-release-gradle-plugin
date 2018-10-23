@@ -85,10 +85,7 @@ class GithubReleasePlugin implements Plugin<Project> {
 
     static <T> void setOrElse(String name, Property<T> prop, Class<T> type, Callable<T> value) {
         if (!prop.isPresent()) {
-            println "Property['$name'] has been defaulted"
-            prop.set(new CachedProvider<T>(new TypedDefaultProvider<T>(type, value)))
-        } else {
-            println "Property['$name'] has been set"
+            prop.set(new TypedDefaultProvider<T>(type, value))
         }
     }
 
