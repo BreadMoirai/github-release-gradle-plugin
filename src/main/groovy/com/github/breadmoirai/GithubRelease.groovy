@@ -44,12 +44,13 @@ class GithubRelease implements Runnable {
     final boolean draft
     final boolean prerelease
     final FileCollection releaseAssets
+    final boolean overwrite
     final OkHttpClient client
     final JsonSlurper slurper
 
     List<Object> releases
 
-    GithubRelease(CharSequence owner, CharSequence repo, CharSequence authorization, CharSequence tagName, CharSequence targetCommitish, CharSequence releaseName, CharSequence body, boolean draft, boolean prerelease, FileCollection releaseAssets) {
+    GithubRelease(CharSequence owner, CharSequence repo, CharSequence authorization, CharSequence tagName, CharSequence targetCommitish, CharSequence releaseName, CharSequence body, boolean draft, boolean prerelease, FileCollection releaseAssets, boolean overwrite) {
         this.owner = owner
         this.repo = repo
         this.authorization = authorization
@@ -60,24 +61,35 @@ class GithubRelease implements Runnable {
         this.draft = draft
         this.prerelease = prerelease
         this.releaseAssets = releaseAssets
+        this.overwrite = overwrite
         client = new OkHttpClient()
         slurper = new JsonSlurper()
-        releases = getReleases()
-
     }
 
     @Override
     void run() {
         Response previousReleaseResponse = checkForPreviousRelease()
-        if (previousReleaseResponse.code() == 200) {
-            logger.info ':githubRelease PREVIOUS RELEASE EXISTS'
-            deletePreviousRelease(previousReleaseResponse)
-        } else if (previousReleaseResponse.code() == 404) {
-            logger.error ':githubRelease FAILED REPOSITORY NOT FOUND'
+        final def code = previousReleaseResponse.code()
+        if (code == 200) {
+            println ':githubRelease EXISTING RELEASE FOUND'
+            if (overwrite) {
+                logger.info ':githubRelease EXISTING RELEASE DELETED'
+                deletePreviousRelease(previousReleaseResponse)
+                Response createReleaseResponse = createRelease()
+                uploadAssets(createReleaseResponse)
+            } else {
+                def s = ':githubRelease FAILED RELEASE ALREADY EXISTS\n\tSet property[\'overwrite\'] to true to replace existing releases'
+                logger.error s
+                throw new Error(s)
+            }
+        } else if (code == 404) {
+            Response createReleaseResponse = createRelease()
+            uploadAssets(createReleaseResponse)
+        } else {
+            def s = ':githubRelease FAILED ERROR CODE ' + code
+            logger.error s
+            throw new Error("$s\n${previousReleaseResponse.body().string()}")
         }
-
-        Response createReleaseResponse = createRelease()
-        uploadAssets(createReleaseResponse)
     }
 
 
@@ -98,7 +110,7 @@ class GithubRelease implements Runnable {
         def responseJson = slurper.parseText(previous.body().string())
         String prevReleaseUrl = responseJson.url
 
-        logger.info ":githubRelease DELETING PREVIOUS RELEASE $prevReleaseUrl"
+        println ":githubRelease DELETING PREVIOUS RELEASE $prevReleaseUrl"
         Request request = createRequestWithHeaders(authorization)
                 .url(prevReleaseUrl)
                 .delete()
@@ -115,49 +127,51 @@ class GithubRelease implements Runnable {
     }
 
     Response createRelease() {
-        logger.info ':githubRelease CREATING RELEASE'
-        def json = JsonOutput.toJson([
-            tag_name: tagName,
-            target_commitish: targetCommitish,
-            name: releaseName,
-            body: body,
-            draft: draft,
-            prerelease: prerelease
+        println ':githubRelease CREATING RELEASE'
+        String json = JsonOutput.toJson([
+                tag_name        : tagName,
+                target_commitish: targetCommitish,
+                name            : releaseName,
+                body            : body,
+                draft           : draft,
+                prerelease      : prerelease
         ])
-
-        def requestBody = RequestBody.create(JSON, json)
-
+        RequestBody requestBody = RequestBody.create(JSON, json)
         Request request = createRequestWithHeaders(authorization)
                 .url("https://api.github.com/repos/$owner/$repo/releases")
                 .post(requestBody)
                 .build()
+        println "json = $json"
+        println "request.headers() = ${request.headers()}"
+
         Response response = client.newCall(request).execute()
         int status = response.code()
         if (status != 201) {
+            def body = response.body().string()
             if (status == 404) {
                 throw new Error("404 Repository with Owner: '$owner' and Name: '$repo' was not found")
             }
-            throw new Error("Could not create release: $status\n$response")
+            throw new Error("Could not create release: $status ${response.message()}\n$body")
         }
-        logger.info ":githubRelease STATUS ${response.header("Status").toUpperCase()}"
+        println ":githubRelease STATUS ${response.header("Status").toUpperCase()}"
         return response
     }
 
     List<Response> uploadAssets(Response response) {
-        logger.info ':githubRelease UPLOADING ASSETS'
+        println ':githubRelease UPLOADING ASSETS'
         def responseJson = slurper.parseText(response.body().string())
 
         ContentInfoUtil util = new ContentInfoUtil()
         if (releaseAssets.isEmpty()) {
-            logger.info ':githubRelease NO ASSETS FOUND'
+            println ':githubRelease NO ASSETS FOUND'
             return Collections.emptyList()
         }
         return releaseAssets.files.stream().collect { asset ->
-            logger.info ":githubRelease UPLOADING $asset.name"
+            println ":githubRelease UPLOADING $asset.name"
             ContentInfo info = util.findMatch(asset) ?: ContentInfo.EMPTY_INFO
             MediaType type = MediaType.parse(info.mimeType)
             if (type == null)
-                logger.info ':githubRelease WARNING Mime Type could not be determined'
+                println ':githubRelease WARNING Mime Type could not be determined'
             String uploadUrl = responseJson.upload_url
             RequestBody assetBody = RequestBody.create(type, asset)
 

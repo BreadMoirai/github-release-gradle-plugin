@@ -71,8 +71,12 @@ import java.util.concurrent.Callable
  *             <td>false</td>
  *         </tr>
  *         <tr>
- *             <td>token</td>
- *             <td>show login prompt</td>
+ *             <td>authorization</td>
+ *             <td>N/A</td>
+ *         </tr>
+ *         <tr>
+ *             <td>overwrite</td>
+ *             <td>false</td>
  *         </tr>
  *     </table>
  * </p>
@@ -92,6 +96,7 @@ class GithubReleaseExtension {
     final Property<Boolean> draft
     final Property<Boolean> prerelease
     final ConfigurableFileCollection releaseAssets
+    final Property<Boolean> overwrite
     private final Project project
 
     GithubReleaseExtension(Project project) {
@@ -107,16 +112,17 @@ class GithubReleaseExtension {
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
         releaseAssets = project.files()
+        overwrite = objectFactory.property(Boolean)
     }
 
     Callable<String> changelog(@DelegatesTo(ChangeLogSupplier) final Closure closure) {
-        def c = new ChangeLogSupplier(this)
+        def c = new ChangeLogSupplier(this, project.objects)
         c.with closure
         return c
     }
 
     Callable<String> changelog() {
-        return new ChangeLogSupplier(this)
+        return new ChangeLogSupplier(this, project.objects)
     }
 
     Provider<CharSequence> getOwnerProvider() {
@@ -184,6 +190,13 @@ class GithubReleaseExtension {
 
     ConfigurableFileCollection getReleaseAssets() {
         return releaseAssets
+    }
+
+    Provider<Boolean> getOverwriteProvider() {
+        if (logger.isDebugEnabled())
+            return new DebugProvider<Boolean>(logger, "overwrite", overwrite)
+        else
+            return overwrite
     }
 
     void setOwner(CharSequence owner) {
@@ -432,6 +445,30 @@ class GithubReleaseExtension {
 
     void releaseAssets(Object... assets) {
         this.releaseAssets.setFrom(assets)
+    }
+
+    void setOverwrite(Boolean replacePrevious) {
+        this.overwrite.set(replacePrevious)
+    }
+
+    void overwrite(Boolean replacePrevious) {
+        this.overwrite.set(replacePrevious)
+    }
+
+    void setOverwrite(Provider<Boolean> replacePrevious) {
+        this.overwrite.set(replacePrevious)
+    }
+
+    void overwrite(Provider<Boolean> replacePrevious) {
+        this.overwrite.set(replacePrevious)
+    }
+
+    void setOverwrite(Callable<Boolean> replacePrevious) {
+        this.overwrite.set(new TypedDefaultProvider<>(Boolean.class, replacePrevious))
+    }
+
+    void overwrite(Callable<Boolean> replacePrevious) {
+        this.overwrite.set(new TypedDefaultProvider<>(Boolean.class, replacePrevious))
     }
 
 }

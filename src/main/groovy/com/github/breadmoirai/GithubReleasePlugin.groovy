@@ -49,6 +49,7 @@ class GithubReleasePlugin implements Plugin<Project> {
                 setDraft ext.draftProvider
                 setPrerelease ext.prereleaseProvider
                 setReleaseAssets ext.releaseAssets
+                setOverwrite ext.overwriteProvider
             }
         }
 
@@ -67,13 +68,16 @@ class GithubReleasePlugin implements Plugin<Project> {
                 }
                 setOrElse("tagName", e.tagName, CharSequence.class) { "v${project.version}" }
                 setOrElse("targetCommitish", e.targetCommitish, CharSequence.class) { 'master' }
-                setOrElse("releaseName", e.releaseName, CharSequence.class) { "v${project.version}" }
+                setOrElse("releaseName", e.releaseName, CharSequence.class) {
+                    e.tagName.get() }
                 setOrElse("draft", e.draft, Boolean.class) { false }
                 setOrElse("prerelease", e.prerelease, Boolean.class) { false }
                 setOrElse("authorization", e.authorization, CharSequence.class) {
-                    new GithubLoginApp().awaitResult().map{result -> "Basic $result"}.get()
+                    //new GithubLoginApp().awaitResult().map{result -> "Basic $result"}.get()
+                    return null
                 }
-                setOrElse("body", e.body, CharSequence.class, new ChangeLogSupplier(e))
+                setOrElse("body", e.body, CharSequence.class, new ChangeLogSupplier(e, project.objects))
+                setOrElse("overwrite", e.overwrite, Boolean.class) { false }
             }
 
         }

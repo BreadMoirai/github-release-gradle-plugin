@@ -39,6 +39,7 @@ class GithubReleaseTask extends DefaultTask {
     @Input final Provider<Boolean> draft
     @Input final Provider<Boolean> prerelease
     @InputFiles final ConfigurableFileCollection releaseAssets
+    @Input final Provider<Boolean> overwrite
 
     GithubReleaseTask() {
         this.setGroup('publishing')
@@ -52,7 +53,10 @@ class GithubReleaseTask extends DefaultTask {
         body = objectFactory.property(CharSequence)
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
+
         releaseAssets = project.files()
+
+        overwrite = objectFactory.property(Boolean)
     }
 
     @TaskAction
@@ -94,8 +98,11 @@ class GithubReleaseTask extends DefaultTask {
             throw new PropertyNotSetException('authorization')
         }
         FileCollection releaseAssets = this.releaseAssets
-
-        new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets).run()
+        Boolean ovr = this.overwrite.getOrNull()
+        if (ovr == null) {
+            throw new PropertyNotSetException('overwrite')
+        }
+        new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets, ovr).run()
     }
 
     void setOwner(CharSequence owner) {
@@ -220,6 +227,18 @@ class GithubReleaseTask extends DefaultTask {
 
     void setReleaseAssets(Object... assets) {
         this.releaseAssets.setFrom(assets)
+    }
+
+    void setOverwrite(boolean overwrite) {
+        this.overwrite.set(overwrite)
+    }
+
+    void setOverwrite(Provider<Boolean> overwrite) {
+        this.overwrite.set(overwrite)
+    }
+
+    void setOverwrite(Callable<Boolean> overwrite) {
+        this.overwrite.set(overwrite)
     }
 
 }

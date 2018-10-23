@@ -44,6 +44,10 @@ class GithubReleaseFunctionalTest extends Specification {
         pluginClasspath = pluginClasspathResource.readLines().collect { new File(it) }
     }
 
+    def "self test"() {
+
+    }
+
     def "manual test"() {
         given:
 //        buildFile << """
@@ -76,7 +80,7 @@ class GithubReleaseFunctionalTest extends Specification {
     def "manual login test"() {
 
         when:
-        new GithubLoginApp().awaitResult()
+        //new GithubLoginApp().awaitResult()
 
                 /*
                 GridPane grid = new GridPane();
