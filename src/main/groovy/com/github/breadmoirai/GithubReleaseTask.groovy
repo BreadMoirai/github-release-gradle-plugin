@@ -98,11 +98,7 @@ class GithubReleaseTask extends DefaultTask {
             throw new PropertyNotSetException('authorization')
         }
         FileCollection releaseAssets = this.releaseAssets
-        Boolean ovr = this.overwrite.getOrNull()
-        if (ovr == null) {
-            throw new PropertyNotSetException('overwrite')
-        }
-        new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets, ovr).run()
+        new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets, this.overwrite).run()
     }
 
     void setOwner(CharSequence owner) {

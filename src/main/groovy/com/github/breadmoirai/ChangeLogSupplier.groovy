@@ -146,7 +146,7 @@ class ChangeLogSupplier implements Callable<String> {
         } catch (IOException e) {
             if (e.cause != null && e.cause.message.contains('CreateProcess error=2')) {
                 throw new Error('Failed to run git executable to find commit history. ' +
-                        'Please specify the link to the git executable.\n')
+                        'Please specify the path to the git executable.\n')
             }
         }
     }

@@ -26,6 +26,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.Provider
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -44,13 +45,11 @@ class GithubRelease implements Runnable {
     final boolean draft
     final boolean prerelease
     final FileCollection releaseAssets
-    final boolean overwrite
+    final Provider<Boolean> overwrite
     final OkHttpClient client
     final JsonSlurper slurper
 
-    List<Object> releases
-
-    GithubRelease(CharSequence owner, CharSequence repo, CharSequence authorization, CharSequence tagName, CharSequence targetCommitish, CharSequence releaseName, CharSequence body, boolean draft, boolean prerelease, FileCollection releaseAssets, boolean overwrite) {
+    GithubRelease(CharSequence owner, CharSequence repo, CharSequence authorization, CharSequence tagName, CharSequence targetCommitish, CharSequence releaseName, CharSequence body, boolean draft, boolean prerelease, FileCollection releaseAssets, Provider<Boolean> overwrite) {
         this.owner = owner
         this.repo = repo
         this.authorization = authorization
@@ -72,7 +71,11 @@ class GithubRelease implements Runnable {
         final def code = previousReleaseResponse.code()
         if (code == 200) {
             println ':githubRelease EXISTING RELEASE FOUND'
-            if (overwrite) {
+            Boolean ovr = this.overwrite.getOrNull()
+            if (ovr == null) {
+                throw new PropertyNotSetException('overwrite')
+            }
+            if (ovr) {
                 logger.info ':githubRelease EXISTING RELEASE DELETED'
                 deletePreviousRelease(previousReleaseResponse)
                 Response createReleaseResponse = createRelease()
