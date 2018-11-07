@@ -4,7 +4,12 @@ A Gradle Plugin to send Releases to Github
 This plugin is not endorsed by Github.
 
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
-If a duplicate release already exists on the Github repo, that release is overridden by this plugin.
+
+## Changelog
+2.2
+- Added more detailed information in [wiki](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki)
+- This will no longer delete existing releases by default and must be specified with `overwrite = true`
+- Added ability to use username and password as shown [here](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki#authorization)
 
 ### Adding as a dependency
 [Gradle Plugin Page](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release)
@@ -18,7 +23,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.com.github.breadmoirai:github-release:2.1.0"
+    classpath "gradle.plugin.com.github.breadmoirai:github-release:2.2.0"
   }
 }
 
@@ -28,7 +33,7 @@ apply plugin: "com.github.breadmoirai.github-release"
 Build script snippet for new, incubating, plugin mechanism introduced in Gradle 2.1:
 ```groovy
 plugins {
-  id "com.github.breadmoirai.github-release" version "2.1.0"
+  id "com.github.breadmoirai.github-release" version "2.2.0"
 }
 ```
 
@@ -49,6 +54,7 @@ githubRelease {
     draft false // by default this is false
     prerelease false // by default this is false
     releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release
+    override true // by default false; if set to true, will delete an existing release with the same tag and name
 }
 ```
 For additional info on these fields please see the [Github API specification](https://developer.github.com/v3/repos/releases/#create-a-release).
