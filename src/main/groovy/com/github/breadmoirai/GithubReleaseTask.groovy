@@ -40,6 +40,7 @@ class GithubReleaseTask extends DefaultTask {
     @Input final Provider<Boolean> prerelease
     @InputFiles final ConfigurableFileCollection releaseAssets
     @Input final Provider<Boolean> overwrite
+    @Input final Provider<Boolean> allowUploadToExisting
 
     GithubReleaseTask() {
         this.setGroup('publishing')
@@ -57,6 +58,7 @@ class GithubReleaseTask extends DefaultTask {
         releaseAssets = project.files()
 
         overwrite = objectFactory.property(Boolean)
+        allowUploadToExisting = objectFactory.property(Boolean)
     }
 
     @TaskAction
@@ -98,7 +100,7 @@ class GithubReleaseTask extends DefaultTask {
             throw new PropertyNotSetException('authorization')
         }
         FileCollection releaseAssets = this.releaseAssets
-        new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets, this.overwrite).run()
+        new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets, this.overwrite, this.allowUploadToExisting).run()
     }
 
     void setOwner(CharSequence owner) {
@@ -235,6 +237,18 @@ class GithubReleaseTask extends DefaultTask {
 
     void setOverwrite(Callable<Boolean> overwrite) {
         this.overwrite.set(overwrite)
+    }
+
+    void setAllowUploadToExisting(boolean allowUploadToExisting) {
+        this.allowUploadToExisting.set(allowUploadToExisting)
+    }
+
+    void setAllowUploadToExisting(Provider<Boolean> allowUploadToExisting) {
+        this.allowUploadToExisting.set(allowUploadToExisting)
+    }
+
+    void setAllowUploadToExisting(Callable<Boolean> allowUploadToExisting) {
+        this.allowUploadToExisting.set(allowUploadToExisting)
     }
 
 }
