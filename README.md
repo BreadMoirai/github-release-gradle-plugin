@@ -8,7 +8,9 @@ This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST reques
 
 ## Changelog
 2.2.1
-- Build with Java 8 ~~#4~~
+- Build with Java 8 Fix #4
+- Fix #5
+
 2.2.0
 - Added more detailed information in [wiki](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki)
 - This will no longer delete existing releases by default and must be specified with `overwrite = true`
