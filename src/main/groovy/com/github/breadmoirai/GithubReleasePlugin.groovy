@@ -79,7 +79,7 @@ class GithubReleasePlugin implements Plugin<Project> {
                 }
                 setOrElse("body", e.body, CharSequence.class, new ChangeLogSupplier(e, project.objects))
                 setOrElse("overwrite", e.overwrite, Boolean.class) { false }
-                setOrElse("allowUploadToExisting", e.overwrite, Boolean.class) { false }
+                setOrElse("allowUploadToExisting", e.allowUploadToExisting, Boolean.class) { false }
             }
 
         }
