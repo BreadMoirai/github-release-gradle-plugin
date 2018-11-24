@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Git-github-release.iml" filepath="$PROJECT_DIR$/.idea/modules/Git-github-release.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/github-release-gradle-plugin.iml" filepath="$PROJECT_DIR$/.idea/github-release-gradle-plugin.iml" />
     </modules>
   </component>
 </project>
