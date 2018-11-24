@@ -160,6 +160,11 @@ class GithubRelease implements Runnable {
         return response
     }
 
+    /**
+     * The responses returned is automatically closed for convenience. This behavior may change in the future if required.
+     * @param response this response should reference the release that the assets will be uploaded to
+     * @return a list of responses from uploaded each asset
+     */
     List<Response> uploadAssets(Response response) {
         println ':githubRelease UPLOADING ASSETS'
         def responseJson = slurper.parseText(response.body().string())
@@ -169,7 +174,7 @@ class GithubRelease implements Runnable {
             println ':githubRelease NO ASSETS FOUND'
             return Collections.emptyList()
         }
-        return releaseAssets.files.stream().collect { asset ->
+        def assetResponses = releaseAssets.files.stream().collect { asset ->
             println ":githubRelease UPLOADING $asset.name"
             ContentInfo info = util.findMatch(asset) ?: ContentInfo.EMPTY_INFO
             MediaType type = MediaType.parse(info.mimeType)
@@ -185,6 +190,8 @@ class GithubRelease implements Runnable {
 
             return client.newCall(assetPost).execute()
         }
+        assetResponses.forEach{ it.close() }
+        return assetResponses
     }
 
     static Request.Builder createRequestWithHeaders(CharSequence authorization) {
