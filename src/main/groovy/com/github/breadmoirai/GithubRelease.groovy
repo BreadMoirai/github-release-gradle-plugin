@@ -79,9 +79,7 @@ class GithubRelease implements Runnable {
                 logger.info ':githubRelease EXISTING RELEASE DELETED'
                 deletePreviousRelease(previousReleaseResponse)
                 Response createReleaseResponse = createRelease()
-                uploadAssets(createReleaseResponse).forEach{
-                    it.close()
-                }
+                uploadAssets(createReleaseResponse)
             } else {
                 def s = ':githubRelease FAILED RELEASE ALREADY EXISTS\n\tSet property[\'overwrite\'] to true to replace existing releases'
                 logger.error s
@@ -89,9 +87,7 @@ class GithubRelease implements Runnable {
             }
         } else if (code == 404) {
             Response createReleaseResponse = createRelease()
-            uploadAssets(createReleaseResponse).forEach{
-                it.close()
-            }
+            uploadAssets(createReleaseResponse)
         } else {
             def s = ':githubRelease FAILED ERROR CODE ' + code
             logger.error s
