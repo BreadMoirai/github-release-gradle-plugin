@@ -83,7 +83,7 @@ class GithubRelease implements Runnable {
                 Response createReleaseResponse = createRelease()
                 uploadAssets(createReleaseResponse)
             } else if (allowUploadToExisting.getOrElse(false)) {
-                logger.info 'Assets will added to existing release :githubRelease'
+                logger.info ':githubRelease Assets will added to existing release'
                 uploadAssets(previousReleaseResponse)
             }else {
                 def s = ':githubRelease FAILED RELEASE ALREADY EXISTS\n\tSet property[\'overwrite\'] to true to replace existing releases'
