@@ -78,6 +78,10 @@ import java.util.concurrent.Callable
  *             <td>overwrite</td>
  *             <td>false</td>
  *         </tr>
+ *         <tr>
+ *              <td>allowUploadToExisting</td>
+ *              <td>false</td>
+ *          </tr>
  *     </table>
  * </p>
  *
@@ -97,6 +101,7 @@ class GithubReleaseExtension {
     final Property<Boolean> prerelease
     final ConfigurableFileCollection releaseAssets
     final Property<Boolean> overwrite
+    final Property<Boolean> allowUploadToExisting
     private final Project project
 
     Provider<CharSequence> cachedOwner
@@ -109,6 +114,7 @@ class GithubReleaseExtension {
     Provider<Boolean> cachedDraft
     Provider<Boolean> cachedPrerelease
     Provider<Boolean> cachedOverwrite
+    Provider<Boolean> cachedAllowUploadToExisting
 
     GithubReleaseExtension(Project project) {
         this.project = project
@@ -124,6 +130,7 @@ class GithubReleaseExtension {
         prerelease = objectFactory.property(Boolean)
         releaseAssets = project.files()
         overwrite = objectFactory.property(Boolean)
+        allowUploadToExisting = objectFactory.property(Boolean)
     }
 
     Callable<String> changelog(@DelegatesTo(ChangeLogSupplier) final Closure closure) {
@@ -228,6 +235,15 @@ class GithubReleaseExtension {
                 cachedOverwrite = new DebugProvider(logger, "overwrite", cachedOverwrite)
         }
         return cachedOverwrite
+    }
+
+    Provider<Boolean> getAllowUploadToExistingProvider() {
+        if (cachedAllowUploadToExisting == null) {
+            cachedAllowUploadToExisting = new CachedProvider<>(allowUploadToExisting)
+            if (logger.isDebugEnabled())
+                cachedAllowUploadToExisting = new DebugProvider(logger, "allowUploadToExisting", cachedAllowUploadToExisting)
+        }
+        return cachedAllowUploadToExisting
     }
 
     void setOwner(CharSequence owner) {
@@ -500,6 +516,30 @@ class GithubReleaseExtension {
 
     void overwrite(Callable<Boolean> replacePrevious) {
         this.overwrite.set(new TypedDefaultProvider<>(Boolean.class, replacePrevious))
+    }
+
+    void setAllowUploadToExisting(Boolean allowUploadToExisting) {
+        this.allowUploadToExisting.set(allowUploadToExisting)
+    }
+
+    void allowUploadToExisting(Boolean allowUploadToExisting) {
+        this.allowUploadToExisting.set(allowUploadToExisting)
+    }
+
+    void setAllowUploadToExisting(Provider<Boolean> allowUploadToExisting) {
+        this.allowUploadToExisting.set(allowUploadToExisting)
+    }
+
+    void allowUploadToExisting(Provider<Boolean> allowUploadToExisting) {
+        this.allowUploadToExisting.set(allowUploadToExisting)
+    }
+
+    void setAllowUploadToExisting(Callable<Boolean> allowUploadToExisting) {
+        this.allowUploadToExisting.set(new TypedDefaultProvider<>(Boolean.class, allowUploadToExisting))
+    }
+
+    void allowUploadToExisting(Callable<Boolean> allowUploadToExisting) {
+        this.allowUploadToExisting.set(new TypedDefaultProvider<>(Boolean.class, allowUploadToExisting))
     }
 
 }
