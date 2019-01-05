@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:2.4.12'
+    implementation 'org.codehaus.groovy:groovy-all:2.5.4'
     implementation 'com.squareup.okhttp3:okhttp:3.8.1'
     implementation 'com.j256.simplemagic:simplemagic:1.10'
     implementation 'org.zeroturnaround:zt-exec:1.10'

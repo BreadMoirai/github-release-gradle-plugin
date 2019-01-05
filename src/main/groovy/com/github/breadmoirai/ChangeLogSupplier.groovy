@@ -19,6 +19,7 @@ package com.github.breadmoirai
 import groovy.json.JsonSlurper
 import okhttp3.OkHttpClient
 import okhttp3.Response
+import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -31,6 +32,8 @@ class ChangeLogSupplier implements Callable<String> {
 
     private static final Logger log = LoggerFactory.getLogger(ChangeLogSupplier.class)
 
+    private final Project project
+
     private final Provider<CharSequence> owner
     private final Provider<CharSequence> repo
     private final Provider<CharSequence> authorization
@@ -41,7 +44,9 @@ class ChangeLogSupplier implements Callable<String> {
     private final Property<CharSequence> lastCommit
     private final Property<List> options
 
-    ChangeLogSupplier(GithubReleaseExtension extension, ObjectFactory objects) {
+    ChangeLogSupplier(GithubReleaseExtension extension, Project project) {
+        this.project = project
+        def objects = project.objects
         this.owner = extension.ownerProvider
         this.repo = extension.repoProvider
         this.authorization = extension.authorizationProvider
@@ -184,35 +189,35 @@ class ChangeLogSupplier implements Callable<String> {
     }
 
     public void setCurrentCommit(Callable<? extends CharSequence> currentCommit) {
-        setCurrentCommit new TypedDefaultProvider<>(CharSequence.class, currentCommit)
+        setCurrentCommit project.provider(currentCommit)
     }
 
     public void currentCommit(Callable<? extends CharSequence> currentCommit) {
-        setCurrentCommit new TypedDefaultProvider<>(CharSequence.class, currentCommit)
+        setCurrentCommit project.provider(currentCommit)
     }
 
     public void setLastCommit(Callable<? extends CharSequence> lastCommit) {
-        setLastCommit new TypedDefaultProvider<>(CharSequence.class, lastCommit)
+        setLastCommit project.provider(lastCommit)
     }
 
     public void lastCommit(Callable<? extends CharSequence> lastCommit) {
-        setLastCommit new TypedDefaultProvider<>(CharSequence.class, lastCommit)
+        setLastCommit project.provider(lastCommit)
     }
 
     public void setOptions(Callable<List> options) {
-        setOptions new TypedDefaultProvider<>(List.class, options)
+        setOptions project.provider(options)
     }
 
     public void options(Callable<List> options) {
-        setOptions new TypedDefaultProvider<>(List.class, options)
+        setOptions project.provider(options)
     }
 
     public void setExecutable(Callable<CharSequence> gitExecutable) {
-        setExecutable new TypedDefaultProvider<CharSequence>(CharSequence.class, gitExecutable)
+        setExecutable project.provider(gitExecutable)
     }
 
     public void executable(Callable<CharSequence> gitExecutable) {
-        setExecutable new TypedDefaultProvider<CharSequence>(CharSequence.class, gitExecutable)
+        setExecutable project.provider(gitExecutable)
     }
 
     public void setCurrentCommit(CharSequence currentCommit) {
