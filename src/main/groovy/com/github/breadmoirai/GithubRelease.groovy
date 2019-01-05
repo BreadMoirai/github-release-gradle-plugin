@@ -46,10 +46,11 @@ class GithubRelease implements Runnable {
     final boolean prerelease
     final FileCollection releaseAssets
     final Provider<Boolean> overwrite
+    final Provider<Boolean> allowUploadToExisting
     final OkHttpClient client
     final JsonSlurper slurper
 
-    GithubRelease(CharSequence owner, CharSequence repo, CharSequence authorization, CharSequence tagName, CharSequence targetCommitish, CharSequence releaseName, CharSequence body, boolean draft, boolean prerelease, FileCollection releaseAssets, Provider<Boolean> overwrite) {
+    GithubRelease(CharSequence owner, CharSequence repo, CharSequence authorization, CharSequence tagName, CharSequence targetCommitish, CharSequence releaseName, CharSequence body, boolean draft, boolean prerelease, FileCollection releaseAssets, Provider<Boolean> overwrite, Provider<Boolean> allowUploadToExisting) {
         this.owner = owner
         this.repo = repo
         this.authorization = authorization
@@ -61,6 +62,7 @@ class GithubRelease implements Runnable {
         this.prerelease = prerelease
         this.releaseAssets = releaseAssets
         this.overwrite = overwrite
+        this.allowUploadToExisting = allowUploadToExisting
         client = new OkHttpClient()
         slurper = new JsonSlurper()
     }
@@ -80,6 +82,9 @@ class GithubRelease implements Runnable {
                 deletePreviousRelease(previousReleaseResponse)
                 Response createReleaseResponse = createRelease()
                 uploadAssets(createReleaseResponse)
+            } else if (allowUploadToExisting.getOrElse(false)) {
+                logger.info ':githubRelease Assets will added to existing release'
+                uploadAssets(previousReleaseResponse)
             } else {
                 def s = ':githubRelease FAILED RELEASE ALREADY EXISTS\n\tSet property[\'overwrite\'] to true to replace existing releases'
                 logger.error s
