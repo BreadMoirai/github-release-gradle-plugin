@@ -149,8 +149,6 @@ class GithubRelease implements Runnable {
                 .url("https://api.github.com/repos/$owner/$repo/releases")
                 .post(requestBody)
                 .build()
-        println "json = $json"
-        println "request.headers() = ${request.headers()}"
 
         Response response = client.newCall(request).execute()
         int status = response.code()
