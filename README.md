@@ -1,5 +1,5 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.2-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.2) 
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.3-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.3) 
 <!-- [![Gradle Plugin Portal](https://img.shields.io/badge/dev-2.2.2--dev-00d5ff.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.2-dev) -->  
 A Gradle Plugin to send Releases to Github
 
@@ -8,6 +8,9 @@ This plugin is not endorsed by Github.
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
 
 ## Changelog
+2.2.3
+- Updated for Gradle 5.x
+
 2.2.2
 - new option [`allowUploadToExisting`](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki#allowUploadToExisting)
 
