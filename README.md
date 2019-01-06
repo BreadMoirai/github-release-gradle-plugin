@@ -24,6 +24,19 @@ This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST reques
 - Added ability to use username and password as shown [here](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki#authorization)
 
 ### Adding as a dependency
+
+## IMPORTANT
+This plugin requires other dependencies. As such, the following must be included at the top of your build.gradle
+
+```gradle
+buildscript {
+  repositores {
+    jcenter()
+  }
+} 
+```
+
+---
 [Gradle Plugin Page](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release)
 
 Build script snippet for use in all Gradle versions:
