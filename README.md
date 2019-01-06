@@ -30,7 +30,7 @@ This plugin requires other dependencies. As such, the following must be included
 
 ```gradle
 buildscript {
-  repositores {
+  repositories {
     jcenter()
   }
 } 
@@ -40,7 +40,7 @@ buildscript {
 [Gradle Plugin Page](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release)
 
 Build script snippet for use in all Gradle versions:
-```groovy
+```gradle
 buildscript {
   repositories {
     maven {
