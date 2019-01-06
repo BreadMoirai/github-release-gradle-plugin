@@ -104,18 +104,6 @@ class GithubReleaseExtension {
     final Property<Boolean> allowUploadToExisting
     private final Project project
 
-    Provider<CharSequence> cachedOwner
-    Provider<CharSequence> cachedRepo
-    Provider<CharSequence> cachedAuthorization
-    Provider<CharSequence> cachedTagName
-    Provider<CharSequence> cachedTargetCommitish
-    Provider<CharSequence> cachedReleaseName
-    Provider<CharSequence> cachedBody
-    Provider<Boolean> cachedDraft
-    Provider<Boolean> cachedPrerelease
-    Provider<Boolean> cachedOverwrite
-    Provider<Boolean> cachedAllowUploadToExisting
-
     GithubReleaseExtension(Project project) {
         this.project = project
         final ObjectFactory objectFactory = project.objects
@@ -134,94 +122,49 @@ class GithubReleaseExtension {
     }
 
     Callable<String> changelog(@DelegatesTo(ChangeLogSupplier) final Closure closure) {
-        def c = new ChangeLogSupplier(this, project.objects)
+        def c = new ChangeLogSupplier(this, project)
         c.with closure
         return c
     }
 
     Callable<String> changelog() {
-        return new ChangeLogSupplier(this, project.objects)
+        return new ChangeLogSupplier(this, project)
     }
 
     Provider<CharSequence> getOwnerProvider() {
-        if (cachedOwner == null) {
-            cachedOwner = new CachedProvider<>(owner)
-            if (logger.isDebugEnabled())
-                cachedOwner = new DebugProvider<>(logger, "owner", cachedOwner)
-        }
-        return cachedOwner
+        return owner
     }
 
     Provider<CharSequence> getRepoProvider() {
-        if (cachedRepo == null) {
-            cachedRepo = new CachedProvider<>(repo)
-            if (logger.isDebugEnabled())
-                cachedRepo = new DebugProvider(logger, "repo", cachedRepo)
-        }
-        return cachedRepo
+        return repo
     }
 
     Provider<CharSequence> getAuthorizationProvider() {
-        if (cachedAuthorization == null) {
-            cachedAuthorization = new CachedProvider<>(authorization)
-            if (logger.isDebugEnabled())
-                return new DebugProvider(logger, "authorization", cachedAuthorization)
-        }
-        return cachedAuthorization
+        return authorization
     }
 
     Provider<CharSequence> getTagNameProvider() {
-        if (cachedTagName == null) {
-            cachedTagName = new CachedProvider<>(tagName)
-            if (logger.isDebugEnabled())
-                cachedTagName = new DebugProvider(logger, "tagName", cachedTagName)
-        }
-        return cachedTagName
+        return tagName
     }
 
     Provider<CharSequence> getTargetCommitishProvider() {
-        if (cachedTargetCommitish == null) {
-            cachedTargetCommitish = new CachedProvider<>(targetCommitish)
-            if (logger.isDebugEnabled())
-                return new DebugProvider(logger, "=", cachedTargetCommitish)
-            return cachedTargetCommitish
-        }
+        return targetCommitish
     }
 
     Provider<CharSequence> getReleaseNameProvider() {
-        if (cachedReleaseName == null) {
-            cachedReleaseName = new CachedProvider<>(releaseName)
-            if (logger.isDebugEnabled())
-                cachedReleaseName = new DebugProvider(logger, "releaseName", cachedReleaseName)
-        }
-        return cachedReleaseName
+        return releaseName
     }
 
     Provider<CharSequence> getBodyProvider() {
-        if (cachedBody == null) {
-            cachedBody = new CachedProvider<>(body)
-            if (logger.isDebugEnabled())
-                cachedBody = new DebugProvider(logger, "body", cachedBody)
-        }
-        return cachedBody
+        return body
     }
 
     Provider<Boolean> getDraftProvider() {
-        if (cachedDraft == null) {
-            cachedDraft = new CachedProvider<>(draft)
-            if (logger.isDebugEnabled())
-                cachedDraft = new DebugProvider(logger, "draft", cachedDraft)
-        }
-        return cachedDraft
+        return draft
     }
 
     Provider<Boolean> getPrereleaseProvider() {
-        if (cachedPrerelease == null) {
-            cachedPrerelease = new CachedProvider<>(prerelease)
-            if (logger.isDebugEnabled())
-                cachedPrerelease = new DebugProvider(logger, "prerelease", cachedPrerelease)
-        }
-        return cachedPrerelease
+        return prerelease
     }
 
     ConfigurableFileCollection getReleaseAssets() {
@@ -229,21 +172,11 @@ class GithubReleaseExtension {
     }
 
     Provider<Boolean> getOverwriteProvider() {
-        if (cachedOverwrite == null) {
-            cachedOverwrite = new CachedProvider<>(overwrite)
-            if (logger.isDebugEnabled())
-                cachedOverwrite = new DebugProvider(logger, "overwrite", cachedOverwrite)
-        }
-        return cachedOverwrite
+        return overwrite
     }
 
     Provider<Boolean> getAllowUploadToExistingProvider() {
-        if (cachedAllowUploadToExisting == null) {
-            cachedAllowUploadToExisting = new CachedProvider<>(allowUploadToExisting)
-            if (logger.isDebugEnabled())
-                cachedAllowUploadToExisting = new DebugProvider(logger, "allowUploadToExisting", cachedAllowUploadToExisting)
-        }
-        return cachedAllowUploadToExisting
+        return allowUploadToExisting
     }
 
     void setOwner(CharSequence owner) {
@@ -263,11 +196,11 @@ class GithubReleaseExtension {
     }
 
     void setOwner(Callable<? extends CharSequence> owner) {
-        this.owner.set(new TypedDefaultProvider<>(CharSequence.class, owner))
+        this.owner.set(project.provider(owner))
     }
 
     void owner(Callable<? extends CharSequence> owner) {
-        this.owner.set(new TypedDefaultProvider<>(CharSequence.class, owner))
+        this.owner.set(project.provider(owner))
     }
 
     void setRepo(CharSequence repo) {
@@ -287,11 +220,11 @@ class GithubReleaseExtension {
     }
 
     void setRepo(Callable<? extends CharSequence> repo) {
-        this.repo.set(new TypedDefaultProvider<>(CharSequence.class, repo))
+        this.repo.set(project.provider(repo))
     }
 
     void repo(Callable<? extends CharSequence> repo) {
-        this.repo.set(new TypedDefaultProvider<>(CharSequence.class, repo))
+        this.repo.set(project.provider(repo))
     }
 
     void setToken(CharSequence token) {
@@ -311,11 +244,11 @@ class GithubReleaseExtension {
     }
 
     void setToken(Callable<? extends CharSequence> token) {
-        this.authorization.set(new TypedDefaultProvider(CharSequence.class, token).map { "Token $it" })
+        this.authorization.set(project.provider(token).map { "Token $it" })
     }
 
     void token(Callable<? extends CharSequence> token) {
-        this.authorization.set(new TypedDefaultProvider(CharSequence.class, token).map { "Token $it" })
+        this.authorization.set(project.provider(token).map { "Token $it" })
     }
 
     void setAuthorization(CharSequence authorization) {
@@ -335,11 +268,11 @@ class GithubReleaseExtension {
     }
 
     void setAuthorization(Callable<? extends CharSequence> authorization) {
-        this.authorization.set(new TypedDefaultProvider<>(CharSequence.class, authorization))
+        this.authorization.set(project.provider(authorization))
     }
 
     void authorization(Callable<? extends CharSequence> authorization) {
-        this.authorization.set(new TypedDefaultProvider<>(CharSequence.class, authorization))
+        this.authorization.set(project.provider(authorization))
     }
 
     void setTagName(CharSequence tagName) {
@@ -359,11 +292,11 @@ class GithubReleaseExtension {
     }
 
     void setTagName(Callable<? extends CharSequence> tagName) {
-        this.tagName.set(new TypedDefaultProvider<>(CharSequence.class, tagName))
+        this.tagName.set(project.provider(tagName))
     }
 
     void tagName(Callable<? extends CharSequence> tagName) {
-        this.tagName.set(new TypedDefaultProvider<>(CharSequence.class, tagName))
+        this.tagName.set(project.provider(tagName))
     }
 
     void setTargetCommitish(CharSequence targetCommitish) {
@@ -383,11 +316,11 @@ class GithubReleaseExtension {
     }
 
     void setTargetCommitish(Callable<? extends CharSequence> targetCommitish) {
-        this.targetCommitish.set(new TypedDefaultProvider<>(CharSequence.class, targetCommitish))
+        this.targetCommitish.set(project.provider(targetCommitish))
     }
 
     void targetCommitish(Callable<? extends CharSequence> targetCommitish) {
-        this.targetCommitish.set(new TypedDefaultProvider<>(CharSequence.class, targetCommitish))
+        this.targetCommitish.set(project.provider(targetCommitish))
     }
 
     void setReleaseName(CharSequence releaseName) {
@@ -407,11 +340,11 @@ class GithubReleaseExtension {
     }
 
     void setReleaseName(Callable<? extends CharSequence> releaseName) {
-        this.releaseName.set(new TypedDefaultProvider<>(CharSequence.class, releaseName))
+        this.releaseName.set(project.provider(releaseName))
     }
 
     void releaseName(Callable<? extends CharSequence> releaseName) {
-        this.releaseName.set(new TypedDefaultProvider<>(CharSequence.class, releaseName))
+        this.releaseName.set(project.provider(releaseName))
     }
 
     void setBody(CharSequence body) {
@@ -431,11 +364,11 @@ class GithubReleaseExtension {
     }
 
     void setBody(Callable<? extends CharSequence> body) {
-        this.body.set(new TypedDefaultProvider<>(CharSequence.class, body))
+        this.body.set(project.provider(body))
     }
 
     void body(Callable<? extends CharSequence> body) {
-        this.body.set(new TypedDefaultProvider<>(CharSequence.class, body))
+        this.body.set(project.provider(body))
     }
 
     void setDraft(boolean draft) {
@@ -455,11 +388,11 @@ class GithubReleaseExtension {
     }
 
     void setDraft(Callable<? extends Boolean> draft) {
-        this.draft.set(new TypedDefaultProvider<>(Boolean.class, draft))
+        this.draft.set(project.provider(draft))
     }
 
     void draft(Callable<? extends Boolean> draft) {
-        this.draft.set(new TypedDefaultProvider<>(Boolean.class, draft))
+        this.draft.set(project.provider(draft))
     }
 
     void setPrerelease(boolean prerelease) {
@@ -479,11 +412,11 @@ class GithubReleaseExtension {
     }
 
     void setPrerelease(Callable<? extends Boolean> prerelease) {
-        this.prerelease.set(new TypedDefaultProvider<>(Boolean.class, prerelease))
+        this.prerelease.set(project.provider(prerelease))
     }
 
     void prerelease(Callable<? extends Boolean> prerelease) {
-        this.prerelease.set(new TypedDefaultProvider<>(Boolean.class, prerelease))
+        this.prerelease.set(project.provider(prerelease))
     }
 
     void setReleaseAssets(Object... assets) {
@@ -511,11 +444,11 @@ class GithubReleaseExtension {
     }
 
     void setOverwrite(Callable<Boolean> replacePrevious) {
-        this.overwrite.set(new TypedDefaultProvider<>(Boolean.class, replacePrevious))
+        this.overwrite.set(project.provider(replacePrevious))
     }
 
     void overwrite(Callable<Boolean> replacePrevious) {
-        this.overwrite.set(new TypedDefaultProvider<>(Boolean.class, replacePrevious))
+        this.overwrite.set(project.provider(replacePrevious))
     }
 
     void setAllowUploadToExisting(Boolean allowUploadToExisting) {
@@ -535,11 +468,11 @@ class GithubReleaseExtension {
     }
 
     void setAllowUploadToExisting(Callable<Boolean> allowUploadToExisting) {
-        this.allowUploadToExisting.set(new TypedDefaultProvider<>(Boolean.class, allowUploadToExisting))
+        this.allowUploadToExisting.set(project.provider(allowUploadToExisting))
     }
 
     void allowUploadToExisting(Callable<Boolean> allowUploadToExisting) {
-        this.allowUploadToExisting.set(new TypedDefaultProvider<>(Boolean.class, allowUploadToExisting))
+        this.allowUploadToExisting.set(project.provider(allowUploadToExisting))
     }
 
 }

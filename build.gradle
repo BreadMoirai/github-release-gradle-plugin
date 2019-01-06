@@ -23,7 +23,7 @@ plugins {
 }
 
 group = 'com.github.breadmoirai'
-version = '2.2.2-dev'
+version = '2.2.3'
 
 repositories {
     jcenter()
@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:2.4.12'
+    implementation 'org.codehaus.groovy:groovy-all:2.5.4'
     implementation 'com.squareup.okhttp3:okhttp:3.8.1'
     implementation 'com.j256.simplemagic:simplemagic:1.10'
     implementation 'org.zeroturnaround:zt-exec:1.10'
@@ -65,8 +65,6 @@ pluginBundle {
         displayName = 'Github Release Plugin'
     }
 }
-
-shadowJar.classifier = ''
 
 task createPluginClasspath {
     def outputDir = file("${buildDir}/resources/test")

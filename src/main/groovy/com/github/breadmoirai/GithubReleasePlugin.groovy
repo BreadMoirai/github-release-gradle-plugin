@@ -28,9 +28,11 @@ class GithubReleasePlugin implements Plugin<Project> {
 
     private final static Logger log = LoggerFactory.getLogger(GithubReleasePlugin.class)
     public static boolean infoEnabled = false
+    private Project project
 
     @Override
     void apply(Project project) {
+        this.project = project
         infoEnabled = project.logger.infoEnabled
 
         log.debug("Creating Extension githubRelease")
@@ -77,7 +79,7 @@ class GithubReleasePlugin implements Plugin<Project> {
                     //new GithubLoginApp().awaitResult().map{result -> "Basic $result"}.get()
                     return null
                 }
-                setOrElse("body", e.body, CharSequence.class, new ChangeLogSupplier(e, project.objects))
+                setOrElse("body", e.body, CharSequence.class, new ChangeLogSupplier(e, project))
                 setOrElse("overwrite", e.overwrite, Boolean.class) { false }
                 setOrElse("allowUploadToExisting", e.allowUploadToExisting, Boolean.class) { false }
             }
@@ -85,9 +87,9 @@ class GithubReleasePlugin implements Plugin<Project> {
         }
     }
 
-    static <T> void setOrElse(String name, Property<T> prop, Class<T> type, Callable<T> value) {
+    def <T> void setOrElse(String name, Property<T> prop, Class<T> type, Callable<T> value) {
         if (!prop.isPresent()) {
-            prop.set(new TypedDefaultProvider<T>(type, value))
+            prop.set(project.provider(value))
         }
     }
 

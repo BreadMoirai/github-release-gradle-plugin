@@ -20,6 +20,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -29,18 +30,18 @@ import java.util.concurrent.Callable
 
 class GithubReleaseTask extends DefaultTask {
 
-    @Input final Provider<CharSequence> owner
-    @Input final Provider<CharSequence> repo
-    @Input final Provider<CharSequence> authorization
-    @Input final Provider<CharSequence> tagName
-    @Input final Provider<CharSequence> targetCommitish
-    @Input final Provider<CharSequence> releaseName
-    @Input final Provider<CharSequence> body
-    @Input final Provider<Boolean> draft
-    @Input final Provider<Boolean> prerelease
+    @Input final Property<CharSequence> owner
+    @Input final Property<CharSequence> repo
+    @Input final Property<CharSequence> authorization
+    @Input final Property<CharSequence> tagName
+    @Input final Property<CharSequence> targetCommitish
+    @Input final Property<CharSequence> releaseName
+    @Input final Property<CharSequence> body
+    @Input final Property<Boolean> draft
+    @Input final Property<Boolean> prerelease
     @InputFiles final ConfigurableFileCollection releaseAssets
-    @Input final Provider<Boolean> overwrite
-    @Input final Provider<Boolean> allowUploadToExisting
+    @Input final Property<Boolean> overwrite
+    @Input final Property<Boolean> allowUploadToExisting
 
     GithubReleaseTask() {
         this.setGroup('publishing')
@@ -112,7 +113,8 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setOwner(Callable<CharSequence> owner) {
-        this.owner.set(new TypedDefaultProvider<>(CharSequence.class, owner))
+        this.own
+        this.owner.set(project.provider(owner))
     }
 
     void setRepo(CharSequence repo) {
@@ -124,7 +126,7 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setRepo(Callable<CharSequence> repo) {
-        this.repo.set(new TypedDefaultProvider<>(CharSequence.class, repo))
+        this.repo.set(project.provider(repo))
     }
 
     void setToken(CharSequence token) {
@@ -136,7 +138,7 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setToken(Callable<CharSequence> token) {
-        this.authorization.set(new TypedDefaultProvider(CharSequence.class, token).map { "Token $it" })
+        this.authorization.set(project.provider(token).map { "Token $it" })
     }
 
     void setAuthorization(CharSequence authorization) {
@@ -148,7 +150,7 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setAuthorization(Callable<CharSequence> authorization) {
-        this.authorization.set(new TypedDefaultProvider<>(CharSequence.class, authorization))
+        this.authorization.set(project.provider(authorization))
     }
 
     void setTagName(CharSequence tagName) {
@@ -160,7 +162,7 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setTagName(Callable<CharSequence> tagName) {
-        this.tagName.set(new TypedDefaultProvider<>(CharSequence.class, tagName))
+        this.tagName.set(project.provider(tagName))
     }
 
     void setTargetCommitish(CharSequence targetCommitish) {
@@ -172,7 +174,7 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setTargetCommitish(Callable<CharSequence> targetCommitish) {
-        this.targetCommitish.set(new TypedDefaultProvider<>(CharSequence.class, targetCommitish))
+        this.targetCommitish.set(project.provider(targetCommitish))
     }
 
     void setReleaseName(CharSequence releaseName) {
@@ -184,7 +186,7 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setReleaseName(Callable<CharSequence> releaseName) {
-        this.releaseName.set(new TypedDefaultProvider<>(CharSequence.class, releaseName))
+        this.releaseName.set(project.provider(releaseName))
     }
 
     void setBody(CharSequence body) {
@@ -196,7 +198,7 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setBody(Callable<CharSequence> body) {
-        this.body.set(new TypedDefaultProvider<>(CharSequence.class, body))
+        this.body.set(project.provider(body))
     }
 
     void setDraft(boolean draft) {
@@ -208,7 +210,7 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setDraft(Callable<Boolean> draft) {
-        this.draft.set(new TypedDefaultProvider<>(Boolean.class, draft))
+        this.draft.set(project.provider(draft))
     }
 
     void setPrerelease(boolean prerelease) {
@@ -220,7 +222,7 @@ class GithubReleaseTask extends DefaultTask {
     }
 
     void setPrerelease(Callable<Boolean> prerelease) {
-        this.prerelease.set(new TypedDefaultProvider<>(Boolean.class, prerelease))
+        this.prerelease.set(project.provider(prerelease))
     }
 
     void setReleaseAssets(Object... assets) {
