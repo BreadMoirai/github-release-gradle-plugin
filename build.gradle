@@ -23,7 +23,7 @@ plugins {
 }
 
 group = 'com.github.breadmoirai'
-version = '2.2.2-dev'
+version = '2.3.0'
 
 repositories {
     jcenter()
@@ -32,7 +32,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:2.4.12'
+    compileOnly project(':ast')
+
+    implementation 'org.codehaus.groovy:groovy-all:2.5.4'
     implementation 'com.squareup.okhttp3:okhttp:3.8.1'
     implementation 'com.j256.simplemagic:simplemagic:1.10'
     implementation 'org.zeroturnaround:zt-exec:1.10'
@@ -47,10 +49,12 @@ dependencies {
 //    testCompile(gradleTestKit())
 }
 
+javadoc.enabled = false
+
 gradlePlugin {
     plugins.create('github-release') {
         id = 'com.github.breadmoirai.github-release'
-        implementationClass = 'com.github.breadmoirai.GithubReleasePlugin'
+        implementationClass = 'com.github.breadmoirai.githubreleaseplugin.GithubReleasePlugin'
     }
 }
 

@@ -1,3 +1,4 @@
+package com.github.breadmoirai.githubreleaseplugin
 ///*
 // *    Copyright 2017 - 2018 BreadMoirai (Ton Ly)
 // *
@@ -32,7 +33,7 @@
 //    @Ignore
 //    def "Test1"() {
 //        when:
-//        def c = new ChangeLogSupplier(new GithubReleaseExtension())
+//        def c = new ChangeLogExtension(new GithubReleaseExtension())
 //        c.lastCommit = {
 //
 //            String lastTag = "test"

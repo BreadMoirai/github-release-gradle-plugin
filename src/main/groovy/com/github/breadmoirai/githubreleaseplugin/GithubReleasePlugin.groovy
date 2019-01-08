@@ -14,11 +14,16 @@
  *    limitations under the License.
  */
 
-package com.github.breadmoirai
+package com.github.breadmoirai.githubreleaseplugin
 
+import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
+import com.github.breadmoirai.githubreleaseplugin.ext.ChangeLogExtension
+import com.github.breadmoirai.githubreleaseplugin.ext.GithubReleaseExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -27,13 +32,31 @@ import java.util.concurrent.Callable
 class GithubReleasePlugin implements Plugin<Project> {
 
     private final static Logger log = LoggerFactory.getLogger(GithubReleasePlugin.class)
-    public static boolean infoEnabled = false
+
+    static {
+        Provider.metaClass.name = "Undefined"
+        Provider.metaClass.getOrThrow << {
+            def val = delegate.getOrNull()
+            if (val == null) {
+                String name = delegate.name
+                throw new PropertyNotSetException(name)
+            }
+            return val
+        }
+        ObjectFactory.metaClass.namedProperty << { String name, Class<?> valueType ->
+            def provider = delegate.property(valueType)
+            provider.name = name
+            return provider
+        }
+    }
+
+    private Project project
 
     @Override
     void apply(Project project) {
-        infoEnabled = project.logger.infoEnabled
+        this.project = project
 
-        log.debug("Creating Extension githubRelease")
+        log.debug("Creating Extension GithubRelease")
         def ext = project.extensions.create('githubRelease', GithubReleaseExtension, project)
 
         project.tasks.create('githubRelease', GithubReleaseTask) {
@@ -60,34 +83,31 @@ class GithubReleasePlugin implements Plugin<Project> {
             if (self) {
                 log.debug("Assigning default values for GithubReleasePlugin")
                 GithubReleaseExtension e = project.extensions.getByType(GithubReleaseExtension)
-                setOrElse("owner", e.owner, CharSequence.class) {
+                setOrElse(e.owner, {
                     def group = project.group.toString()
                     group.substring(group.lastIndexOf('.') + 1)
-                }
-                setOrElse("repo", e.repo, CharSequence.class) {
+                })
+                setOrElse(e.repo, {
                     project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
-                }
-                setOrElse("tagName", e.tagName, CharSequence.class) { "v${project.version}" }
-                setOrElse("targetCommitish", e.targetCommitish, CharSequence.class) { 'master' }
-                setOrElse("releaseName", e.releaseName, CharSequence.class) {
-                    e.tagName.get() }
-                setOrElse("draft", e.draft, Boolean.class) { false }
-                setOrElse("prerelease", e.prerelease, Boolean.class) { false }
-                setOrElse("authorization", e.authorization, CharSequence.class) {
-                    //new GithubLoginApp().awaitResult().map{result -> "Basic $result"}.get()
-                    return null
-                }
-                setOrElse("body", e.body, CharSequence.class, new ChangeLogSupplier(e, project.objects))
-                setOrElse("overwrite", e.overwrite, Boolean.class) { false }
-                setOrElse("allowUploadToExisting", e.allowUploadToExisting, Boolean.class) { false }
+                })
+                setOrElse(e.tagName, { "v${project.version}" })
+                setOrElse(e.targetCommitish, { 'master' })
+                setOrElse(e.releaseName, {
+                    e.tagName.get()
+                })
+                setOrElse(e.draft, { false })
+                setOrElse(e.prerelease, { false })
+                // authorization has no default value
+                setOrElse(e.body, new ChangeLogExtension(e, project))
+                setOrElse(e.overwrite, { false })
+                setOrElse(e.allowUploadToExisting, { false })
             }
-
         }
     }
 
-    static <T> void setOrElse(String name, Property<T> prop, Class<T> type, Callable<T> value) {
+    private <T> void setOrElse(Property<T> prop, Callable<T> value) {
         if (!prop.isPresent()) {
-            prop.set(new TypedDefaultProvider<T>(type, value))
+            prop.set(project.provider(value))
         }
     }
 

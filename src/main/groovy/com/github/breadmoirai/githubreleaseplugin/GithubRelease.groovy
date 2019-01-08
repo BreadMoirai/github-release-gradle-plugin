@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package com.github.breadmoirai
+package com.github.breadmoirai.githubreleaseplugin
 
+import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
 import com.j256.simplemagic.ContentInfo
 import com.j256.simplemagic.ContentInfoUtil
 import groovy.json.JsonOutput

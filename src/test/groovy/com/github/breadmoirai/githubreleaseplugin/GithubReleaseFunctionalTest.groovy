@@ -1,3 +1,4 @@
+package com.github.breadmoirai.githubreleaseplugin
 ///*
 // *    Copyright 2017 - 2018 BreadMoirai (Ton Ly)
 // *
