@@ -14,8 +14,11 @@
  *    limitations under the License.
  */
 
-package com.github.breadmoirai
+package com.github.breadmoirai.githubreleaseplugin.ext
 
+import com.github.breadmoirai.githubreleaseplugin.GithubRelease
+import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
+import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionProperty
 import groovy.json.JsonSlurper
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -28,9 +31,9 @@ import org.slf4j.LoggerFactory
 import org.zeroturnaround.exec.ProcessExecutor
 import java.util.concurrent.Callable
 
-class ChangeLogSupplier implements Callable<String> {
+class ChangeLogExtension implements Callable<CharSequence> {
 
-    private static final Logger log = LoggerFactory.getLogger(ChangeLogSupplier.class)
+    private static final Logger log = LoggerFactory.getLogger(ChangeLogExtension.class)
 
     private final Project project
 
@@ -39,9 +42,13 @@ class ChangeLogSupplier implements Callable<String> {
     private final Provider<CharSequence> authorization
     private final Provider<CharSequence> tag
 
+    @ExtensionProperty
     private final Property<CharSequence> executable
+    @ExtensionProperty
     private final Property<CharSequence> currentCommit
+    @ExtensionProperty
     private final Property<CharSequence> lastCommit
+    @ExtensionProperty
     private final Property<List> options
 
     ChangeLogSupplier(GithubReleaseExtension extension, Project project) {
@@ -55,10 +62,10 @@ class ChangeLogSupplier implements Callable<String> {
         this.currentCommit = objects.property(CharSequence)
         this.lastCommit = objects.property(CharSequence)
         this.options = objects.property(List)
-        setExecutable 'git'
-        setCurrentCommit "HEAD"
-        setLastCommit { this.getLastReleaseCommit() }
-        setOptions(["--format=oneline", "--abbrev-commit", "--max-count=50"])
+        executable.set 'git'
+        currentCommit.set "HEAD"
+        lastCommit.set project.provider({ this.getLastReleaseCommit() })
+        options.set(["--format=oneline", "--abbrev-commit", "--max-count=50"])
     }
 
     /**
@@ -66,22 +73,10 @@ class ChangeLogSupplier implements Callable<String> {
      * @return
      */
     private CharSequence getLastReleaseCommit() {
-        CharSequence owner = this.owner.getOrNull()
-        if (owner == null) {
-            throw new PropertyNotSetException("owner")
-        }
-        CharSequence repo = this.repo.getOrNull()
-        if (repo == null) {
-            throw new PropertyNotSetException("repo")
-        }
-        CharSequence auth = authorization.getOrNull()
-        if (auth == null) {
-            throw new PropertyNotSetException("auth")
-        }
-        CharSequence tag = this.tag.getOrNull()
-        if (tag == null) {
-            throw new PropertyNotSetException("tag")
-        }
+        CharSequence owner = this.owner.getOrThrow()
+        CharSequence repo = this.repo.getOrThrow()
+        CharSequence auth = this.authorization.getOrThrow()
+        CharSequence tag = this.tag.getOrThrow()
 
         // query the github api for releases
         String releaseUrl = "https://api.github.com/repos/$owner/$repo/releases"
@@ -133,14 +128,11 @@ class ChangeLogSupplier implements Callable<String> {
     @Override
     String call() {
         log.info ':githubRelease Generating Release Body with Commit History'
-        CharSequence current = currentCommit.get()
-        CharSequence last = lastCommit.get()
-        List<String> opts = options.get()*.toString()
-        CharSequence get = executable.getOrNull()
-        if (get == null) {
-            throw new PropertyNotSetException('get')
-        }
-        List<String> cmds = [get, 'rev-list', *opts, last + '..' + current, '--']
+        CharSequence current = currentCommit.getOrThrow()
+        CharSequence last = lastCommit.getOrThrow()
+        List<String> opts = options.getOrThrow()*.toString()
+        CharSequence git = executable.getOrThrow()
+        List<String> cmds = [git, 'rev-list', *opts, last + '..' + current, '--']
         try {
             return new ProcessExecutor()
                     .command(cmds)
@@ -153,102 +145,8 @@ class ChangeLogSupplier implements Callable<String> {
                 throw new Error('Failed to run git executable to find commit history. ' +
                         'Please specify the path to the git executable.\n')
             }
+            else throw e
         }
     }
 
-    public void setCurrentCommit(Provider<? extends CharSequence> currentCommit) {
-        this.currentCommit.set(currentCommit)
-    }
-
-    public void currentCommit(Provider<? extends CharSequence> currentCommit) {
-        this.currentCommit.set(currentCommit)
-    }
-
-    public void setLastCommit(Provider<? extends CharSequence> lastCommit) {
-        this.lastCommit.set(lastCommit)
-    }
-
-    public void lastCommit(Provider<? extends CharSequence> lastCommit) {
-        this.lastCommit.set(lastCommit)
-    }
-
-    public void setOptions(Provider<List> options) {
-        this.options.set(options)
-    }
-
-    public void options(Provider<List> options) {
-        this.options.set(options)
-    }
-
-    public void setExecutable(Provider<CharSequence> gitExecutable) {
-        this.executable.set(gitExecutable)
-    }
-
-    public void executable(Provider<CharSequence> gitExecutable) {
-        this.executable.set(gitExecutable)
-    }
-
-    public void setCurrentCommit(Callable<? extends CharSequence> currentCommit) {
-        setCurrentCommit project.provider(currentCommit)
-    }
-
-    public void currentCommit(Callable<? extends CharSequence> currentCommit) {
-        setCurrentCommit project.provider(currentCommit)
-    }
-
-    public void setLastCommit(Callable<? extends CharSequence> lastCommit) {
-        setLastCommit project.provider(lastCommit)
-    }
-
-    public void lastCommit(Callable<? extends CharSequence> lastCommit) {
-        setLastCommit project.provider(lastCommit)
-    }
-
-    public void setOptions(Callable<List> options) {
-        setOptions project.provider(options)
-    }
-
-    public void options(Callable<List> options) {
-        setOptions project.provider(options)
-    }
-
-    public void setExecutable(Callable<CharSequence> gitExecutable) {
-        setExecutable project.provider(gitExecutable)
-    }
-
-    public void executable(Callable<CharSequence> gitExecutable) {
-        setExecutable project.provider(gitExecutable)
-    }
-
-    public void setCurrentCommit(CharSequence currentCommit) {
-        setCurrentCommit { currentCommit }
-    }
-
-    public void currentCommit(CharSequence currentCommit) {
-        setCurrentCommit { currentCommit }
-    }
-
-    public void setLastCommit(CharSequence lastCommit) {
-        setLastCommit { lastCommit }
-    }
-
-    public void lastCommit(CharSequence lastCommit) {
-        setLastCommit { lastCommit }
-    }
-
-    public void setOptions(List options) {
-        setOptions { options }
-    }
-
-    public void options(List options) {
-        setOptions { options }
-    }
-
-    public void setExecutable(CharSequence gitExecutable) {
-        setExecutable { gitExecutable }
-    }
-
-    public void executable(CharSequence gitExecutable) {
-        setExecutable { gitExecutable }
-    }
 }
