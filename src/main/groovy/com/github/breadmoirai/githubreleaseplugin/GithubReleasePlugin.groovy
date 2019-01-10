@@ -17,7 +17,6 @@
 package com.github.breadmoirai.githubreleaseplugin
 
 import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
-import com.github.breadmoirai.githubreleaseplugin.ext.ChangeLogExtension
 import com.github.breadmoirai.githubreleaseplugin.ext.GithubReleaseExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -52,8 +51,6 @@ class GithubReleasePlugin implements Plugin<Project> {
         }
     }
 
-    private Project project
-
     @Override
     void apply(Project project) {
         this.project = project
@@ -84,33 +81,33 @@ class GithubReleasePlugin implements Plugin<Project> {
             def self = project.plugins.findPlugin(GithubReleasePlugin)
 
             if (self) {
-                log.debug("Assigning default values for GithubReleasePlugin")
-                GithubReleaseExtension e = project.extensions.getByType(GithubReleaseExtension)
-                setOrElse(e.owner, {
+                log.debug "Assigning default values for GithubReleasePlugin"
+                GithubReleaseExtension e = project.extensions.getByType GithubReleaseExtension
+                setOrElse e.owner, {
                     def group = project.group.toString()
                     group.substring(group.lastIndexOf('.') + 1)
-                })
-                setOrElse(e.repo, {
+                }
+                setOrElse e.repo, {
                     project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
-                })
-                setOrElse(e.tagName, { "v${project.version}" })
-                setOrElse(e.targetCommitish, { 'master' })
-                setOrElse(e.releaseName, {
+                }
+                setOrElse e.tagName, { "v${project.version}" }
+                setOrElse e.targetCommitish, { 'master' }
+                setOrElse e.releaseName, {
                     e.tagName.get()
-                })
-                setOrElse(e.draft, { false })
-                setOrElse(e.prerelease, { false })
+                }
+                setOrElse e.draft, { false }
+                setOrElse e.prerelease, { false }
                 // authorization has no default value
-                setOrElse(e.body, new ChangeLogExtension(e, project))
-                setOrElse(e.overwrite, { false })
-                setOrElse(e.allowUploadToExisting, { false })
+                setOrElse e.body, { "" }
+                setOrElse e.overwrite, { false }
+                setOrElse e.allowUploadToExisting, { false }
             }
         }
     }
 
     private <T> void setOrElse(Property<T> prop, Callable<T> value) {
         if (!prop.isPresent()) {
-            prop.set(project.provider(value))
+            prop.set project.provider(value)
         }
     }
 

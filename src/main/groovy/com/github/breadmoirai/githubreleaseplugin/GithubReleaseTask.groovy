@@ -16,91 +16,124 @@
 
 package com.github.breadmoirai.githubreleaseplugin
 
-import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionProperty
-import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
+import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
 
+import java.nio.charset.StandardCharsets
+
+@ExtensionClass
 class GithubReleaseTask extends DefaultTask {
 
     @Input
-    @ExtensionProperty
-    final Property<CharSequence> owner
+    final Property<String> owner
     @Input
-    @ExtensionProperty
-    final Property<CharSequence> repo
+    final Property<String> repo
     @Input
-    @ExtensionProperty
-    final Property<CharSequence> authorization
+    final Property<String> authorization
     @Input
-    @ExtensionProperty
-    final Property<CharSequence> tagName
+    final Property<String> tagName
     @Input
-    @ExtensionProperty
-    final Property<CharSequence> targetCommitish
+    final Property<String> targetCommitish
     @Input
-    @ExtensionProperty
-    final Property<CharSequence> releaseName
+    final Property<String> releaseName
     @Input
-    @ExtensionProperty
-    final Property<CharSequence> body
+    final Property<String> body
     @Input
-    @ExtensionProperty
     final Property<Boolean> draft
     @Input
-    @ExtensionProperty
     final Property<Boolean> prerelease
     @InputFiles
     final ConfigurableFileCollection releaseAssets
     @Input
-    @ExtensionProperty
     final Property<Boolean> overwrite
     @Input
-    @ExtensionProperty
     final Property<Boolean> allowUploadToExisting
 
     GithubReleaseTask() {
         this.setGroup('publishing')
         final ObjectFactory objectFactory = project.objects
-        owner = objectFactory.property(CharSequence)
-        repo = objectFactory.property(CharSequence)
-        authorization = objectFactory.property(CharSequence)
-        tagName = objectFactory.property(CharSequence)
-        targetCommitish = objectFactory.property(CharSequence)
-        releaseName = objectFactory.property(CharSequence)
-        body = objectFactory.property(CharSequence)
+        owner = objectFactory.property(String)
+        repo = objectFactory.property(String)
+        authorization = objectFactory.property(String)
+        tagName = objectFactory.property(String)
+        targetCommitish = objectFactory.property(String)
+        releaseName = objectFactory.property(String)
+        body = objectFactory.property(String)
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
-
         releaseAssets = project.files()
-
         overwrite = objectFactory.property(Boolean)
         allowUploadToExisting = objectFactory.property(Boolean)
     }
 
-    @TaskAction
-    void publishRelease() {
-        CharSequence tag = this.tagName.getOrThrow()
-        CharSequence tar = this.targetCommitish.getOrThrow()
-        CharSequence rel = this.releaseName.getOrThrow()
-        CharSequence bod = this.body.getOrThrow()
-        CharSequence own = this.owner.getOrThrow()
-        CharSequence rep = this.repo.getOrThrow()
-        Boolean dra = this.draft.getOrThrow()
-        Boolean pre = this.prerelease.getOrThrow()
-        CharSequence auth = this.authorization.getOrThrow()
-        FileCollection releaseAssets = this.releaseAssets
-        new GithubRelease(own, rep, auth, tag, tar, rel, bod, dra, pre, releaseAssets, this.overwrite, this.allowUploadToExisting).run()
-    }
-
     void setReleaseAssets(Object... assets) {
         this.releaseAssets.setFrom(assets)
+    }
+
+    @TaskAction
+    void publishRelease() {
+        def api = new GithubApi(authorization.getOrThrow())
+        def ownerValue = owner.getOrThrow()
+        def repoValue = repo.getOrThrow()
+        def tagValue = tagName.getOrThrow()
+        def previousRelease = api.findGithubReleaseByTag ownerValue, repoValue, tagValue
+        if (previousRelease.code == 200) {
+            println ":githubRelease EXISTING RELEASE FOUND ${previousRelease.body.html_url}"
+            if (this.overwrite.getOrThrow()) {
+                def response = api.deleteGithubReleaseByUrl previousRelease.body.url as String
+                if (response.code != 204) {
+                    if (response.code == 404) {
+                        throw new Error("404 Repository at ${previousRelease.body.url} was not found")
+                    }
+                    throw new Error("Couldn't delete old release: $response.code $response.message\n$response.body")
+                }
+            } else if (this.allowUploadToExisting.getOrThrow() && (releaseAssets.size() > 0)) {
+                println ':githubRelease UPLOADING ASSETS TO EXISTING RELEASE'
+                uploadAssetsToUrl api, previousRelease.body.upload_url as String
+            } else {
+                throw new Error(':githubRelease FAILED RELEASE ALREADY EXISTS')
+            }
+        } else if (previousRelease.code == 404) {
+            def response = api.postRelease ownerValue as String, repoValue as String, [
+                    tag_name        : tagValue,
+                    target_commitish: targetCommitish.getOrThrow(),
+                    name            : releaseName.getOrThrow(),
+                    body            : body.getOrThrow(),
+                    draft           : draft.getOrThrow(),
+                    prerelease      : prerelease.getOrThrow()
+            ]
+            if (response.code != 201) {
+                if (response.code == 404) {
+                    throw new Error("404 Repository with Owner: '${ownerValue}' and Name: '${repoValue}' was not found")
+                }
+                throw new Error("Could not create release: $response.code $response.message\n$response.body")
+            } else {
+                println ":githubRelease STATUS ${response.message.toUpperCase()}"
+                println ":githubRelease $response.body.html_url"
+                if (releaseAssets.size() > 0) {
+                    println ':githubRelease UPLOADING ASSETS'
+                    uploadAssetsToUrl api, response.body.upload_url as String
+                }
+            }
+        } else {
+            throw new Error(":githubRelease FAILED $previousRelease.code $previousRelease.message\n$previousRelease.body")
+        }
+    }
+
+    void uploadAssetsToUrl(GithubApi api, String url) {
+        releaseAssets.files.each { asset ->
+            url = url.replace '{?name,label}', "?name=${URLEncoder.encode(asset.name, StandardCharsets.UTF_8.displayName())}"
+            def response = api.uploadFileToUrl url, asset
+            if (response.code != 201) {
+                System.err.println ":githubRelease FAILED TO UPLOAD $asset.name\n$response.code $response.message\n$response.body"
+            }
+        }
     }
 
 }

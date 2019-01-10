@@ -23,7 +23,7 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 
 /**
- * An extension for the {@link GithubReleasePlugin}
+ * An extension for the {@link com.github.breadmoirai.githubreleaseplugin.GithubReleasePlugin}
  * <p> See Default Values below </p>
  * <p>
  *     <table>
