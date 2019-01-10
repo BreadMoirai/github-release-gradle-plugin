@@ -16,14 +16,11 @@
 
 package com.github.breadmoirai.githubreleaseplugin.ext
 
-import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionProperty
-import com.github.breadmoirai.githubreleaseplugin.ext.ChangeLogExtension
+import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-
-import java.util.concurrent.Callable
 
 /**
  * An extension for the {@link GithubReleasePlugin}
@@ -84,29 +81,19 @@ import java.util.concurrent.Callable
  * </p>
  *
  */
+@ExtensionClass
 class GithubReleaseExtension {
 
-    @ExtensionProperty
-    final Property<CharSequence> owner
-    @ExtensionProperty
-    final Property<CharSequence> repo
-    @ExtensionProperty
-    final Property<CharSequence> authorization
-    @ExtensionProperty
-    final Property<CharSequence> tagName
-    @ExtensionProperty
-    final Property<CharSequence> targetCommitish
-    @ExtensionProperty
-    final Property<CharSequence> releaseName
-    @ExtensionProperty
-    final Property<CharSequence> body
-    @ExtensionProperty
+    final Property<String> owner
+    final Property<String> repo
+    final Property<String> authorization
+    final Property<String> tagName
+    final Property<String> targetCommitish
+    final Property<String> releaseName
+    final Property<String> body
     final Property<Boolean> draft
-    @ExtensionProperty
     final Property<Boolean> prerelease
-    @ExtensionProperty
     final Property<Boolean> overwrite
-    @ExtensionProperty
     final Property<Boolean> allowUploadToExisting
 
     final ConfigurableFileCollection releaseAssets
@@ -116,13 +103,13 @@ class GithubReleaseExtension {
     GithubReleaseExtension(Project project) {
         this.project = project
         final ObjectFactory objectFactory = project.objects
-        owner = objectFactory.namedProperty("owner", CharSequence)
-        repo = objectFactory.namedProperty("repo", CharSequence)
-        authorization = objectFactory.namedProperty("authorization", CharSequence)
-        tagName = objectFactory.namedProperty("tagName", CharSequence)
-        targetCommitish = objectFactory.namedProperty("targetCommitish", CharSequence)
-        releaseName = objectFactory.namedProperty("releaseName", CharSequence)
-        body = objectFactory.namedProperty("body", CharSequence)
+        owner = objectFactory.namedProperty("owner", String)
+        repo = objectFactory.namedProperty("repo", String)
+        authorization = objectFactory.namedProperty("authorization", String)
+        tagName = objectFactory.namedProperty("tagName", String)
+        targetCommitish = objectFactory.namedProperty("targetCommitish", String)
+        releaseName = objectFactory.namedProperty("releaseName", String)
+        body = objectFactory.namedProperty("body", String)
         draft = objectFactory.namedProperty("draft", Boolean)
         prerelease = objectFactory.namedProperty("prerelease", Boolean)
         releaseAssets = project.files()
@@ -130,15 +117,15 @@ class GithubReleaseExtension {
         allowUploadToExisting = objectFactory.namedProperty("allowUploadToExisting", Boolean)
     }
 
-    void changelog(@DelegatesTo(ChangeLogExtension) final Closure closure) {
-        def c = new ChangeLogExtension(this, project)
-        c.with closure
-        body.set project.provider(new ChangeLogExtension(this, project))
-    }
-
-    void changelog() {
-        body.set project.provider(new ChangeLogExtension(this, project))
-    }
+//    void changelog(@DelegatesTo(ChangeLogExtension) final Closure closure) {
+//        def c = new ChangeLogExtension(this, project)
+//        c.with closure
+//        body.set project.provider(new ChangeLogExtension(this, project))
+//    }
+//
+//    void changelog() {
+//        body.set project.provider(new ChangeLogExtension(this, project))
+//    }
 
     ConfigurableFileCollection getReleaseAssets() {
         return releaseAssets

@@ -5,6 +5,7 @@ import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
+import org.codehaus.groovy.ast.stmt.ReturnStatement
 import org.codehaus.groovy.ast.tools.GeneralUtils
 import org.codehaus.groovy.ast.tools.GenericsUtils
 import org.codehaus.groovy.control.CompilePhase
@@ -17,6 +18,8 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
+import org.gradle.api.tasks.Input
 
 import java.util.concurrent.Callable
 
@@ -25,7 +28,7 @@ import java.util.concurrent.Callable
 class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
 
     @Override
-    void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
+    void visit(ASTNode[] astNodes, SourceUnit _) {
         FieldNode fieldNode = astNodes[1] as FieldNode
         ClassNode classNode = fieldNode.declaringClass
         // assertions to make sure it is applied correctly
@@ -37,54 +40,27 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
         if (fieldNode.type.typeClass.name != 'org.gradle.api.provider.Property') {
             throw new ExtensionPropertyException("The ExtensionProperty annotation can only be applied to fields of the type ${Property.name}. This annotation has been applied to the field '${fieldNode.name}' of type '${fieldNode.type.typeClass.name}'")
         }
-        FieldNode projectField = classNode.getField('project')
-        if (projectField == null || projectField.type.typeClass.name != 'org.gradle.api.Project') {
-            throw new ExtensionPropertyException("The ExtensionProperty annotation can only be applied to fields with an accompanying field named `project` of the type ${Project.name}")
-        }
 
 
         String fieldName = fieldNode.name
         String fieldNameCap = fieldName.capitalize()
         GenericsType genericType = fieldNode.type.getGenericsTypes()[0]
 
-        FieldExpression projectVar = GeneralUtils.fieldX(projectField)
-        def objectFactoryExpression = new PropertyExpression(projectVar, "objects")
-
 
         FieldExpression fieldVar = GeneralUtils.fieldX(fieldNode)
-        // initialize field in constructor
-        BlockStatement constructorBody = classNode.declaredConstructors[0].code as BlockStatement
-        constructorBody.addStatement(
-                new ExpressionStatement(
-                        new BinaryExpression(
-                                fieldVar,
-                                Token.newSymbol(Types.EQUAL, 0, 0),
-                                new MethodCallExpression(
-                                        objectFactoryExpression,
-                                        "namedProperty",
-                                        new ArgumentListExpression(
-                                                new ConstantExpression(fieldName),
-                                                new ClassExpression(genericType.type)
-                                        )
-                                )
-                        )
-                )
-        )
 
         // create getter method
-        BlockStatement getProviderReturnStatement = MacroGroovyMethods.macro(CompilePhase.SEMANTIC_ANALYSIS, true) {
-//            return $v{projectVar}.provider( { $v{fieldVar}.getOrNull() }.memoize())
-            return $v{fieldVar}
-        }
-
+        // getPropertyProvider
         def providerClassNode = createParameterizedNode(Provider, genericType)
-        classNode.addMethod(new MethodNode(
+        classNode.addMethod new MethodNode(
                 "get${fieldNameCap}Provider",
                 ACC_PROTECTED,
                 providerClassNode,
                 [] as Parameter[],
                 [] as ClassNode[],
-                getProviderReturnStatement))
+                new ReturnStatement(fieldVar)).tap {
+            it.addAnnotation new AnnotationNode(new ClassNode(Input))
+        }
 
         //create setter methods
         // setProperty(T value)
@@ -138,7 +114,7 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
                 ClassHelper.VOID_TYPE,
                 [paramCallable] as Parameter[],
                 [] as ClassNode[],
-                new ExpressionStatement(new MethodCallExpression(new FieldExpression(fieldNode), "set", new MethodCallExpression(new FieldExpression(projectField), "provider", new VariableExpression(paramCallable))))
+                new ExpressionStatement(new MethodCallExpression(new FieldExpression(fieldNode), "set", new MethodCallExpression(new ClassExpression(new ClassNode(ProviderFactory)), "provider", new VariableExpression(paramCallable))))
         ))
         // prop(Callable<? extends T> callable)
         classNode.addMethod(new MethodNode(
@@ -147,7 +123,7 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
                 ClassHelper.VOID_TYPE,
                 [paramCallable] as Parameter[],
                 [] as ClassNode[],
-                new ExpressionStatement(new MethodCallExpression(new FieldExpression(fieldNode), "set", new MethodCallExpression(new FieldExpression(projectField), "provider", new VariableExpression(paramCallable))))
+                new ExpressionStatement(new MethodCallExpression(new FieldExpression(fieldNode), "set", new MethodCallExpression(new ClassExpression(new ClassNode(ProviderFactory)), "provider", new VariableExpression(paramCallable))))
         ))
     }
 
