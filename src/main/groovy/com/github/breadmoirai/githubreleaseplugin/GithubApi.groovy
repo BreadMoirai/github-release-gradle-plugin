@@ -12,16 +12,24 @@ class GithubApi {
 
     private final Map<String, String> defaultHeaders
 
-    GithubApi(String authorization) {
+    GithubApi(CharSequence authorization) {
         this.defaultHeaders = [
-                'Authorization': authorization,
+                'Authorization': authorization.toString(),
                 'User-Agent'   : 'breadmoirai github-release-gradle-plugin',
                 'Accept'       : 'application/vnd.github.v3+json',
                 'Content-Type' : 'application/json'
         ]
     }
 
-    Response openConnection(String url, @DelegatesTo(HttpsURLConnection) Closure closure) {
+    /**
+     * Opens the specified {@code url} and sends an http request after applying the {@code closure}.
+     * The response is read and returned. The response body is parsed as JSON and represented as an field
+     * in the returned {@link Response}.
+     * @param url the api endpoint
+     * @param closure a closure that adds any necessary configuration to the url connection such as the requestMethod
+     * @return The response containing the status code, status message, response headers, and the body as an object
+     */
+    Response connect(String url, @DelegatesTo(HttpsURLConnection) Closure closure) {
         (new URL(url).openConnection() as HttpsURLConnection).with { connection ->
             defaultHeaders.forEach { key, value ->
                 setRequestProperty key, value
@@ -37,24 +45,24 @@ class GithubApi {
         }
     }
 
-    Response findGithubReleaseByTag(CharSequence owner, CharSequence repo, CharSequence tagName) {
+    Response findReleaseByTag(CharSequence owner, CharSequence repo, CharSequence tagName) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases/tags/$tagName"
         println ':githubRelease CHECKING FOR PREVIOUS RELEASE ' + releaseUrl
-        openConnection(releaseUrl) {
+        connect(releaseUrl) {
             requestMethod = 'GET'
         }
     }
 
-    Response deleteGithubReleaseByUrl(String url) {
+    Response deleteReleaseByUrl(String url) {
         println 'githubRelease DELETING RELEASE ' + url
-        openConnection(url) {
+        connect(url) {
             requestMethod = "DELETE"
         }
     }
 
     Response uploadFileToUrl(String url, File asset) {
         println ':githubRelease UPLOADING ' + asset.name
-        openConnection(url) {
+        connect(url) {
             requestMethod = "PUT"
             setRequestProperty('Content-Type', Files.probeContentType(asset.toPath()))
             doOutput = true
@@ -62,15 +70,31 @@ class GithubApi {
         }
     }
 
-    Response postRelease(String owner, String repo, Map data) {
+    Response postRelease(CharSequence owner, CharSequence repo, Map data) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases"
         println ':githubRelease CREATING NEW RELEASE'
-        openConnection(releaseUrl) {
+        connect(releaseUrl) {
             requestMethod = "POST"
             doOutput = true
             outputStream.withPrintWriter {
                 it.write(JsonOutput.toJson(data))
             }
+        }
+    }
+    
+    Response getReleases(CharSequence owner, CharSequence repo) {
+        String releaseUrl = "$endpoint/repos/$owner/$repo/releases"
+        println ':githubRelease RETRIEVING RELEASES ' + releaseUrl
+        connect(releaseUrl) {
+            requestMethod = "GET"
+        }
+    }
+
+    Response getCommits(CharSequence owner, CharSequence repo) {
+        String commitsUrl = "$endpoint/repo/$owner/$repo/commits"
+        println ':githubRelease RETRIEVING COMMITS ' + commitsUrl
+        connect(commitsUrl) {
+            requestMethod = "GET"
         }
     }
 

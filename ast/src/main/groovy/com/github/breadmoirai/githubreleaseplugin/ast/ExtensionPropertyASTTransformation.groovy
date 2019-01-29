@@ -2,23 +2,21 @@ package com.github.breadmoirai.githubreleaseplugin.ast
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.*
-import org.codehaus.groovy.ast.expr.*
-import org.codehaus.groovy.ast.stmt.BlockStatement
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
+import org.codehaus.groovy.ast.expr.FieldExpression
+import org.codehaus.groovy.ast.expr.MethodCallExpression
+import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.ReturnStatement
 import org.codehaus.groovy.ast.tools.GeneralUtils
 import org.codehaus.groovy.ast.tools.GenericsUtils
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.macro.methods.MacroGroovyMethods
-import org.codehaus.groovy.syntax.Token
-import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.Input
 
 import java.util.concurrent.Callable
@@ -40,7 +38,10 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
         if (fieldNode.type.typeClass.name != 'org.gradle.api.provider.Property') {
             throw new ExtensionPropertyException("The ExtensionProperty annotation can only be applied to fields of the type ${Property.name}. This annotation has been applied to the field '${fieldNode.name}' of type '${fieldNode.type.typeClass.name}'")
         }
-
+        FieldNode projectField = classNode.getField('project')
+        if (projectField == null || projectField.type.typeClass.name != 'org.gradle.api.Project') {
+            throw new ExtensionPropertyException("The ExtensionProperty annotation can only be applied to fields with an accompanying field named `project` of the type ${Project.name}")
+        }
 
         String fieldName = fieldNode.name
         String fieldNameCap = fieldName.capitalize()
@@ -58,7 +59,8 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
                 providerClassNode,
                 [] as Parameter[],
                 [] as ClassNode[],
-                new ReturnStatement(fieldVar)).tap {
+                new ReturnStatement(fieldVar)
+        ).tap {
             it.addAnnotation new AnnotationNode(new ClassNode(Input))
         }
 
@@ -114,7 +116,17 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
                 ClassHelper.VOID_TYPE,
                 [paramCallable] as Parameter[],
                 [] as ClassNode[],
-                new ExpressionStatement(new MethodCallExpression(new FieldExpression(fieldNode), "set", new MethodCallExpression(new ClassExpression(new ClassNode(ProviderFactory)), "provider", new VariableExpression(paramCallable))))
+                new ExpressionStatement(
+                        new MethodCallExpression(
+                                new FieldExpression(fieldNode),
+                                "set",
+                                new MethodCallExpression(
+                                        new FieldExpression(projectField),
+                                        "provider",
+                                        new VariableExpression(paramCallable)
+                                )
+                        )
+                )
         ))
         // prop(Callable<? extends T> callable)
         classNode.addMethod(new MethodNode(
@@ -123,7 +135,17 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
                 ClassHelper.VOID_TYPE,
                 [paramCallable] as Parameter[],
                 [] as ClassNode[],
-                new ExpressionStatement(new MethodCallExpression(new FieldExpression(fieldNode), "set", new MethodCallExpression(new ClassExpression(new ClassNode(ProviderFactory)), "provider", new VariableExpression(paramCallable))))
+                new ExpressionStatement(
+                        new MethodCallExpression(
+                                new FieldExpression(fieldNode),
+                                "set",
+                                new MethodCallExpression(
+                                        new FieldExpression(projectField),
+                                        "provider",
+                                        new VariableExpression(paramCallable)
+                                )
+                        )
+                )
         ))
     }
 

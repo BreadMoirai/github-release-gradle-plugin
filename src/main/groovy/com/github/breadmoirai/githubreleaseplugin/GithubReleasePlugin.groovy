@@ -17,7 +17,6 @@
 package com.github.breadmoirai.githubreleaseplugin
 
 import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
-import com.github.breadmoirai.githubreleaseplugin.ext.GithubReleaseExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
