@@ -23,7 +23,7 @@ plugins {
 }
 
 group = 'com.github.breadmoirai'
-version = '2.2.3'
+version = '2.2.4'
 
 repositories {
     jcenter()
@@ -33,9 +33,9 @@ repositories {
 
 dependencies {
     implementation 'org.codehaus.groovy:groovy-all:2.5.4'
-    implementation 'com.squareup.okhttp3:okhttp:3.8.1'
-    implementation 'com.j256.simplemagic:simplemagic:1.10'
-    implementation 'org.zeroturnaround:zt-exec:1.10'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
+    compile 'com.j256.simplemagic:simplemagic:1.10'
+    compile 'org.zeroturnaround:zt-exec:1.10'
 
     compileOnly 'com.gradle.publish:plugin-publish-plugin:0.9.7'
 
