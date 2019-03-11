@@ -14,13 +14,15 @@
  *    limitations under the License.
  */
 
-package com.github.breadmoirai
+package com.github.breadmoirai.githubreleaseplugin
 
+import com.github.breadmoirai.GithubRelease
+import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
 import groovy.json.JsonSlurper
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Response
 import org.gradle.api.Project
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.slf4j.Logger
@@ -85,7 +87,7 @@ class ChangeLogSupplier implements Callable<String> {
 
         // query the github api for releases
         String releaseUrl = "https://api.github.com/repos/$owner/$repo/releases"
-        Response response = new OkHttpClient().newCall(GithubRelease.createRequestWithHeaders(auth)
+        Response response = new OkHttpClient().newCall(createRequestWithHeaders(auth)
                 .url(releaseUrl)
                 .get()
                 .build()
@@ -116,7 +118,7 @@ class ChangeLogSupplier implements Callable<String> {
             String lastTag = lastRelease.tag_name
             String tagUrl = "https://api.github.com/repos/$owner/$repo/git/refs/tags/$lastTag"
             Response tagResponse = new OkHttpClient()
-                    .newCall(GithubRelease.createRequestWithHeaders(auth)
+                    .newCall(createRequestWithHeaders(auth)
                     .url(tagUrl)
                     .get()
                     .build()
@@ -250,5 +252,14 @@ class ChangeLogSupplier implements Callable<String> {
 
     public void executable(CharSequence gitExecutable) {
         setExecutable { gitExecutable }
+    }
+
+    @Deprecated
+    static Request.Builder createRequestWithHeaders(CharSequence authorization) {
+        return new Request.Builder()
+                .addHeader('Authorization', authorization.toString())
+                .addHeader('User-Agent', "breadmoirai github-release-gradle-plugin")
+                .addHeader('Accept', 'application/vnd.github.v3+json')
+                .addHeader('Content-Type', 'application/json')
     }
 }

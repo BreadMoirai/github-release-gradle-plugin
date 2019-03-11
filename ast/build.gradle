@@ -1,0 +1,15 @@
+plugins {
+    id 'groovy'
+}
+
+group 'com.github.breadmoirai'
+version '2.3.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.codehaus.groovy:groovy-all:2.5.4'
+    implementation gradleApi()
+}
