@@ -14,23 +14,21 @@
  *    limitations under the License.
  */
 
-package com.github.breadmoirai
+package com.github.breadmoirai.githubreleaseplugin
 
+import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
 import groovy.json.JsonSlurper
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Response
 import org.gradle.api.Project
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.zeroturnaround.exec.ProcessExecutor
+
 import java.util.concurrent.Callable
 
 class ChangeLogSupplier implements Callable<String> {
-
-    private static final Logger log = LoggerFactory.getLogger(ChangeLogSupplier.class)
 
     private final Project project
 
@@ -85,7 +83,7 @@ class ChangeLogSupplier implements Callable<String> {
 
         // query the github api for releases
         String releaseUrl = "https://api.github.com/repos/$owner/$repo/releases"
-        Response response = new OkHttpClient().newCall(GithubRelease.createRequestWithHeaders(auth)
+        Response response = new OkHttpClient().newCall(createRequestWithHeaders(auth)
                 .url(releaseUrl)
                 .get()
                 .build()
@@ -96,7 +94,7 @@ class ChangeLogSupplier implements Callable<String> {
         List releases = new JsonSlurper().parse(response.body().bytes()) as List
         // find current release if exists
         int index = releases.findIndexOf { release -> (release.tag_name == tag) }
-        if (releases.isEmpty()) {
+        if (releases.isEmpty() || (releases.size() == 1 && index == 0)) {
             CharSequence exe = this.executable.getOrNull()
             if (exe == null) {
                 throw new PropertyNotSetException("exe")
@@ -111,12 +109,12 @@ class ChangeLogSupplier implements Callable<String> {
                     .trim()
         } else {
             // get the next release before the current release
-            // if current release does not ezist, then gets the most recent release
+            // if current release does not exist, then gets the most recent release
             Object lastRelease = releases.get(index + 1)
             String lastTag = lastRelease.tag_name
             String tagUrl = "https://api.github.com/repos/$owner/$repo/git/refs/tags/$lastTag"
             Response tagResponse = new OkHttpClient()
-                    .newCall(GithubRelease.createRequestWithHeaders(auth)
+                    .newCall(createRequestWithHeaders(auth)
                     .url(tagUrl)
                     .get()
                     .build()
@@ -132,7 +130,7 @@ class ChangeLogSupplier implements Callable<String> {
 
     @Override
     String call() {
-        log.info ':githubRelease Generating Release Body with Commit History'
+        println ':githubRelease Generating Release Body with Commit History'
         CharSequence current = currentCommit.get()
         CharSequence last = lastCommit.get()
         List<String> opts = options.get()*.toString()
@@ -153,8 +151,11 @@ class ChangeLogSupplier implements Callable<String> {
                 throw new Error('Failed to run git executable to find commit history. ' +
                         'Please specify the path to the git executable.\n')
             }
+            else throw e
         }
     }
+
+
 
     public void setCurrentCommit(Provider<? extends CharSequence> currentCommit) {
         this.currentCommit.set(currentCommit)
@@ -250,5 +251,18 @@ class ChangeLogSupplier implements Callable<String> {
 
     public void executable(CharSequence gitExecutable) {
         setExecutable { gitExecutable }
+    }
+
+    static Request.Builder createRequestWithHeaders(CharSequence authorization) {
+        return new Request.Builder()
+                .addHeader('Authorization', authorization.toString())
+                .addHeader('User-Agent', "breadmoirai github-release-gradle-plugin")
+                .addHeader('Accept', 'application/vnd.github.v3+json')
+                .addHeader('Content-Type', 'application/json')
+    }
+
+    @Override
+    public String toString() {
+        return call()
     }
 }

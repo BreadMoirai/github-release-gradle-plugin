@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.github.breadmoirai
+package com.github.breadmoirai.githubreleaseplugin.exceptions
 
 /**
  * @author TonTL
