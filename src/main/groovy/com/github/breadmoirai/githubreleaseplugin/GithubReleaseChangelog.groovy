@@ -1,18 +1,13 @@
 //package com.github.breadmoirai.githubreleaseplugin
 //
 //import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
-//import com.github.breadmoirai.githubreleaseplugin.ext.ChangeLogExtension
-//import groovy.json.JsonSlurper
-//import okhttp3.OkHttpClient
-//import okhttp3.Response
 //import org.gradle.api.Project
 //import org.gradle.api.provider.Provider
-//import org.slf4j.Logger
-//import org.slf4j.LoggerFactory
 //import org.zeroturnaround.exec.ProcessExecutor
 //
-//class GithubReleaseChangelog {
-//    private static final Logger log = LoggerFactory.getLogger(ChangeLogExtension.class)
+//import java.util.concurrent.Callable
+//
+//class GithubReleaseChangelog implements Callable<String>  {
 //
 //    private final Provider<CharSequence> owner
 //    private final Provider<CharSequence> repo
@@ -49,15 +44,8 @@
 //
 //        // query the github api for releases
 //        String releaseUrl = "https://api.github.com/repos/$owner/$repo/releases"
-//        Response response = new OkHttpClient().newCall(GithubRelease.createRequestWithHeaders(auth)
-//                                                               .url(releaseUrl)
-//                                                               .get()
-//                                                               .build()
-//                                                      ).execute()
-//        if (response.code() != 200) {
-//            return ""
-//        }
-//        List releases = new JsonSlurper().parse(response.body().bytes()) as List
+//        def api = new GithubApi(auth)
+//        def releases = api.getReleases(owner, repo).body
 //        // find current release if exists
 //        int index = releases.findIndexOf { release -> (release.tag_name == tag) }
 //        if (releases.isEmpty()) {
@@ -79,24 +67,15 @@
 //            Object lastRelease = releases.get(index + 1)
 //            String lastTag = lastRelease.tag_name
 //            String tagUrl = "https://api.github.com/repos/$owner/$repo/git/refs/tags/$lastTag"
-//            Response tagResponse = new OkHttpClient()
-//                    .newCall(GithubRelease.createRequestWithHeaders(auth)
-//                                     .url(tagUrl)
-//                                     .get()
-//                                     .build()
-//                            ).execute()
-//
-//            // retrieves the sha1 commit from the response
-//            def bodyS = tagResponse.body().bytes()
-//            tagResponse.body().close()
-//            return new JsonSlurper().parse(bodyS).object.sha
+//            return api.connect(tagUrl) {
+//                requestMethod = 'GET'
+//            }.body.sha
 //        }
 //
 //    }
 //
 //    @Override
 //    String call() {
-//        log.info ':githubRelease Generating Release Body with Commit History'
 //        CharSequence current = currentCommit.getOrThrow()
 //        CharSequence last = lastCommit.getOrThrow()
 //        List<String> opts = options.getOrThrow()*.toString()
@@ -112,9 +91,8 @@
 //        } catch (IOException e) {
 //            if (e.cause != null && e.cause.message.contains('CreateProcess error=2')) {
 //                throw new Error('Failed to run git executable to find commit history. ' +
-//                                        'Please specify the path to the git executable.\n')
-//            }
-//            else throw e
+//                        'Please specify the path to the git executable.\n')
+//            } else throw e
 //        }
 //    }
 //}

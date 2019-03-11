@@ -43,6 +43,13 @@ class GithubReleasePlugin implements Plugin<Project> {
             }
             return val
         }
+        Provider.metaClass.getOrDefault << { Closure<?> defaultValue ->
+            def val = delegate.getOrNull()
+            if (val == null) {
+                return defaultValue()
+            }
+            return val
+        }
         ObjectFactory.metaClass.namedProperty << { String name, Class<?> valueType ->
             def provider = delegate.property(valueType)
             provider.name = name
@@ -76,38 +83,38 @@ class GithubReleasePlugin implements Plugin<Project> {
             }
         }
 
-        project.afterEvaluate {
-            def self = project.plugins.findPlugin(GithubReleasePlugin)
-
-            if (self) {
-                log.debug "Assigning default values for GithubReleasePlugin"
-                GithubReleaseExtension e = project.extensions.getByType GithubReleaseExtension
-                setOrElse e.owner, {
-                    def group = project.group.toString()
-                    group.substring(group.lastIndexOf('.') + 1)
-                }
-                setOrElse e.repo, {
-                    project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
-                }
-                setOrElse e.tagName, { "v${project.version}" }
-                setOrElse e.targetCommitish, { 'master' }
-                setOrElse e.releaseName, {
-                    e.tagName.get()
-                }
-                setOrElse e.draft, { false }
-                setOrElse e.prerelease, { false }
-                // authorization has no default value
-                setOrElse e.body, { "" }
-                setOrElse e.overwrite, { false }
-                setOrElse e.allowUploadToExisting, { false }
-            }
-        }
+//        project.afterEvaluate {
+//            def self = project.plugins.findPlugin(GithubReleasePlugin)
+//
+//            if (self) {
+//                log.debug "Assigning default values for GithubReleasePlugin"
+//                GithubReleaseExtension e = project.extensions.getByType GithubReleaseExtension
+//                setOrElse e.owner, {
+//                    def group = project.group.toString()
+//                    group.substring(group.lastIndexOf('.') + 1)
+//                }
+//                setOrElse e.repo, {
+//                    project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
+//                }
+//                setOrElse e.tagName, { "v${project.version}" }
+//                setOrElse e.targetCommitish, { 'master' }
+//                setOrElse e.releaseName, {
+//                    e.tagName.get()
+//                }
+//                setOrElse e.draft, { false }
+//                setOrElse e.prerelease, { false }
+//                // authorization has no default value
+//                setOrElse e.body, { "" }
+//                setOrElse e.overwrite, { false }
+//                setOrElse e.allowUploadToExisting, { false }
+//            }
+//        }
     }
-
-    private <T> void setOrElse(Property<T> prop, Callable<T> value) {
-        if (!prop.isPresent()) {
-            prop.set project.provider(value)
-        }
-    }
+//
+//    private <T> void setOrElse(Property<T> prop, Callable<T> value) {
+//        if (!prop.isPresent()) {
+//            prop.set project.provider(value)
+//        }
+//    }
 
 }

@@ -98,8 +98,6 @@ class GithubReleaseExtension {
 
     final ConfigurableFileCollection releaseAssets
 
-    final GithubChangelogExtension changelog
-
     final Project project
 
     GithubReleaseExtension(Project project) {
@@ -117,17 +115,6 @@ class GithubReleaseExtension {
         releaseAssets = project.files()
         overwrite = objectFactory.namedProperty("overwrite", Boolean)
         allowUploadToExisting = objectFactory.namedProperty("allowUploadToExisting", Boolean)
-        changelog = new GithubChangelogExtension()
-    }
-
-    GithubChangelogExtension changelog(@DelegatesTo(GithubChangelogExtension) final Closure closure) {
-        closure.setDelegate(changelog)
-        closure.call()
-        return changelog
-    }
-
-    GithubChangelogExtension changelog() {
-        return changelog
     }
 
     ConfigurableFileCollection getReleaseAssets() {
@@ -140,11 +127,6 @@ class GithubReleaseExtension {
 
     void releaseAssets(Object... assets) {
         this.releaseAssets.setFrom(assets)
-    }
-
-    @ExtensionClass
-    class GithubChangelogExtension {
-
     }
 
 }

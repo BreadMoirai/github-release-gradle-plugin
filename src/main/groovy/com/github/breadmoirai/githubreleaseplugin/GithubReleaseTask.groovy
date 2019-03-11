@@ -17,6 +17,7 @@
 package com.github.breadmoirai.githubreleaseplugin
 
 import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
+import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
@@ -84,17 +85,27 @@ class GithubReleaseTask extends DefaultTask {
     void publishRelease() {
         final CharSequence authValue = authorization.getOrThrow()
         final GithubApi api = new GithubApi(authValue)
-        final CharSequence ownerValue = owner.getOrThrow()
-        final CharSequence repoValue = repo.getOrThrow()
-        final CharSequence tagValue = tagName.getOrThrow()
+        final CharSequence ownerValue = owner.getOrDefault {
+            try {
+                return project.group.toString().substring(group.lastIndexOf('.') + 1)
+            } catch(Exception ignored) {
+                throw new PropertyNotSetException("owner")
+            }
+        }
+        final CharSequence repoValue = repo.getOrDefault {
+            def repo = project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
+            if (repo == null) throw new PropertyNotSetException("repo")
+            return repo
+        }
+        final CharSequence tagValue = tagName.getOrDefault { "v${project.version}" }
         def previousRelease = api.findReleaseByTag ownerValue, repoValue, tagValue
         switch (previousRelease.code) {
             case 200:
                 println ":githubRelease EXISTING RELEASE FOUND ${previousRelease.body.html_url}"
-                if (this.overwrite.getOrThrow()) {
+                if (this.overwrite.getOrElse(false)) {
                     deleteRelease(api, previousRelease)
                     createRelease(api, ownerValue, repoValue, tagValue)
-                } else if (this.allowUploadToExisting.getOrThrow() && (releaseAssets.size() > 0)) {
+                } else if (this.allowUploadToExisting.getOrElse(false) && (releaseAssets.size() > 0)) {
                     println ':githubRelease UPLOADING ASSETS TO EXISTING RELEASE'
                     uploadAssetsToUrl api, previousRelease.body.upload_url as String
                 } else {
@@ -124,11 +135,11 @@ class GithubReleaseTask extends DefaultTask {
     private void createRelease(GithubApi api, CharSequence ownerValue, CharSequence repoValue, CharSequence tagValue) {
         def response = api.postRelease ownerValue.toString(), repoValue.toString(), [
                 tag_name        : tagValue,
-                target_commitish: targetCommitish.getOrThrow(),
-                name            : releaseName.getOrThrow(),
-                body            : body.getOrThrow(),
-                draft           : draft.getOrThrow(),
-                prerelease      : prerelease.getOrThrow()
+                target_commitish: targetCommitish.getOrElse('master'),
+                name            : releaseName.getOrElse(tagValue),
+                body            : body.getOrElse(""),
+                draft           : draft.getOrElse(false),
+                prerelease      : prerelease.getOrElse(false)
         ]
         if (response.code != 201) {
             if (response.code == 404) {
