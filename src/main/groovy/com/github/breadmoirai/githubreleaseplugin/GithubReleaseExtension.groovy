@@ -16,7 +16,6 @@
 
 package com.github.breadmoirai.githubreleaseplugin
 
-
 import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
@@ -104,21 +103,39 @@ class GithubReleaseExtension {
 
     final Project project
 
+    @SuppressWarnings("GroovyAssignabilityCheck")
     GithubReleaseExtension(Project project) {
         this.project = project
         final ObjectFactory objectFactory = project.objects
-        owner = objectFactory.namedProperty("owner", CharSequence)
-        repo = objectFactory.namedProperty("repo", CharSequence)
-        authorization = objectFactory.namedProperty("authorization", CharSequence)
-        tagName = objectFactory.namedProperty("tagName", CharSequence)
-        targetCommitish = objectFactory.namedProperty("targetCommitish", CharSequence)
-        releaseName = objectFactory.namedProperty("releaseName", CharSequence)
-        body = objectFactory.namedProperty("body", CharSequence)
-        draft = objectFactory.namedProperty("draft", Boolean)
-        prerelease = objectFactory.namedProperty("prerelease", Boolean)
+        owner = objectFactory.property(CharSequence)
+        repo = objectFactory.property(CharSequence)
+        authorization = objectFactory.property(CharSequence)
+        tagName = objectFactory.property(CharSequence)
+        targetCommitish = objectFactory.property(CharSequence)
+        releaseName = objectFactory.property(CharSequence)
+        body = objectFactory.property(CharSequence)
+        draft = objectFactory.property(Boolean)
+        prerelease = objectFactory.property(Boolean)
         releaseAssets = project.files()
-        overwrite = objectFactory.namedProperty("overwrite", Boolean)
-        allowUploadToExisting = objectFactory.namedProperty("allowUploadToExisting", Boolean)
+        overwrite = objectFactory.property(Boolean)
+        allowUploadToExisting = objectFactory.property(Boolean)
+
+        owner {
+            def group = project.group.toString()
+            return group.substring(group.lastIndexOf('.') + 1)
+        }
+        repo {
+            project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
+        }
+        tagName { "v${project.version}" }
+        targetCommitish { 'master' }
+        releaseName { "v${project.version}" }
+        draft { false }
+        prerelease { false }
+        // authorization has no default value
+        body { "" }
+        overwrite { false }
+        allowUploadToExisting { false }
     }
 
     Callable<String> changelog(@DelegatesTo(ChangeLogSupplier) final Closure closure) {
@@ -142,7 +159,6 @@ class GithubReleaseExtension {
     void releaseAssets(Object... assets) {
         this.releaseAssets.setFrom(assets)
     }
-
 
     void setToken(CharSequence token) {
         this.authorization.set("Token $token")

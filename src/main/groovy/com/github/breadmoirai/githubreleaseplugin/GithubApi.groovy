@@ -47,14 +47,21 @@ class GithubApi {
 
     Response findReleaseByTag(CharSequence owner, CharSequence repo, CharSequence tagName) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases/tags/$tagName"
-        println ':githubRelease CHECKING FOR PREVIOUS RELEASE ' + releaseUrl
+        println ':githubRelease CHECKING FOR PREVIOUS RELEASE'
         connect(releaseUrl) {
             requestMethod = 'GET'
         }
     }
 
+    Response findTagByName(CharSequence owner, CharSequence repo, CharSequence tagName) {
+        String tagUrl = "$endpoint/repos/$owner/$repo/git/refs/tags/$tagName"
+        connect(tagUrl) {
+            requestMethod = "GET"
+        }
+    }
+
     Response deleteReleaseByUrl(String url) {
-        println 'githubRelease DELETING RELEASE ' + url
+        println 'githubRelease DELETING RELEASE'
         connect(url) {
             requestMethod = "DELETE"
         }
