@@ -1,5 +1,5 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.5-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.4) 
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.5-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.5) 
 <!-- [![Gradle Plugin Portal](https://img.shields.io/badge/dev-2.2.2--dev-00d5ff.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.2-dev) -->  
 [i17]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/17
 [i16]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/16
