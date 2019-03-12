@@ -76,7 +76,7 @@ githubRelease {
     tagName "v1.0.0" // by default this is set to "v${project.version}"
     targetCommitish "master" // by default this is set to "master"
     releaseName "v1.0.0" // Release title, by default this is the same as the tagName
-    body "Wham, bam! Thank you clam!" // by default this is a list of commits from the current commit to the last commit associated with a github release
+    body "" // by default this is empty
     draft false // by default this is false
     prerelease false // by default this is false
     releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release
