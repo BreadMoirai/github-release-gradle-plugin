@@ -1,8 +1,9 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.5-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.5) 
-<!-- [![Gradle Plugin Portal](https://img.shields.io/badge/dev-2.2.2--dev-00d5ff.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.2-dev) -->  
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.6-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.6)
+
 [i17]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/17
 [i16]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/16
+[i14]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/14
 [i11]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/11
 
 
@@ -13,6 +14,9 @@ This plugin is not endorsed by Github.
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
 
 ## Changelog
+2.2.6
+- Address [#14][i14] with new property [`apiEndpoint`](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki#apiEndpoint)
+
 2.2.5
 - Removed unnecessary urls in logging
 - Address [#17][i17] by setting default values elsewhere
@@ -81,6 +85,7 @@ githubRelease {
     prerelease false // by default this is false
     releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release
     override true // by default false; if set to true, will delete an existing release with the same tag and name
+    apiEndpoint "https://api.github.com" // should only change for github enterprise users
 }
 ```
 For additional info on these fields please see the [Github API specification](https://developer.github.com/v3/repos/releases/#create-a-release).

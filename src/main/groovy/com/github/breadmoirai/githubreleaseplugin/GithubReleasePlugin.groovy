@@ -24,20 +24,15 @@ import org.slf4j.LoggerFactory
 
 class GithubReleasePlugin implements Plugin<Project> {
 
-    private final static Logger log = LoggerFactory.getLogger(GithubReleasePlugin.class)
-    public static boolean infoEnabled = false
     private Project project
 
     @Override
     void apply(Project project) {
         this.project = project
-        infoEnabled = project.logger.infoEnabled
 
-        log.debug("Creating Extension GithubRelease")
         def ext = project.extensions.create('githubRelease', GithubReleaseExtension, project)
 
         project.tasks.create('githubRelease', GithubReleaseTask) {
-            log.debug("Creating Task githubRelease")
             it.with {
                 setAuthorization ext.authorizationProvider
                 setOwner ext.ownerProvider
@@ -51,6 +46,7 @@ class GithubReleasePlugin implements Plugin<Project> {
                 setReleaseAssets ext.releaseAssets
                 setOverwrite ext.overwriteProvider
                 setAllowUploadToExisting ext.allowUploadToExistingProvider
+                setApiEndpoint ext.apiEndpointProvider
             }
         }
     }

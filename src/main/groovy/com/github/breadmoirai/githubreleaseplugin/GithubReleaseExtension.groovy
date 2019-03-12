@@ -98,6 +98,7 @@ class GithubReleaseExtension {
     final Property<Boolean> prerelease
     final Property<Boolean> overwrite
     final Property<Boolean> allowUploadToExisting
+    final Property<CharSequence> apiEndpoint
 
     final ConfigurableFileCollection releaseAssets
 
@@ -119,6 +120,7 @@ class GithubReleaseExtension {
         releaseAssets = project.files()
         overwrite = objectFactory.property(Boolean)
         allowUploadToExisting = objectFactory.property(Boolean)
+        apiEndpoint = objectFactory.property(CharSequence)
 
         owner {
             def group = project.group.toString()
@@ -136,6 +138,7 @@ class GithubReleaseExtension {
         body { "" }
         overwrite { false }
         allowUploadToExisting { false }
+        apiEndpoint { GithubApi.endpoint }
     }
 
     Callable<String> changelog(@DelegatesTo(ChangeLogSupplier) final Closure closure) {

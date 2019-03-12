@@ -8,7 +8,7 @@ import java.nio.file.Files
 
 class GithubApi {
 
-    public static String endpoint = "https://api.github.com"
+    static String endpoint = "https://api.github.com"
 
     private final Map<String, String> defaultHeaders
 
@@ -61,7 +61,7 @@ class GithubApi {
     }
 
     Response deleteReleaseByUrl(String url) {
-        println 'githubRelease DELETING RELEASE'
+        println ':githubRelease DELETING RELEASE'
         connect(url) {
             requestMethod = "DELETE"
         }

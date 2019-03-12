@@ -55,6 +55,8 @@ class GithubReleaseTask extends DefaultTask {
     final Property<Boolean> overwrite
     @Input
     final Property<Boolean> allowUploadToExisting
+    @Input
+    final Property<CharSequence> apiEndpoint
 
     final Project project
 
@@ -74,6 +76,7 @@ class GithubReleaseTask extends DefaultTask {
         releaseAssets = project.files()
         overwrite = objectFactory.property(Boolean)
         allowUploadToExisting = objectFactory.property(Boolean)
+        apiEndpoint = objectFactory.property(CharSequence)
     }
 
     void setReleaseAssets(Object... assets) {
@@ -82,6 +85,7 @@ class GithubReleaseTask extends DefaultTask {
 
     @TaskAction
     void publishRelease() {
+        GithubApi.endpoint = apiEndpoint.get()
         final CharSequence authValue = authorization.get()
         final GithubApi api = new GithubApi(authValue)
         final CharSequence ownerValue = owner.get()

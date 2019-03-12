@@ -82,7 +82,7 @@ class ChangeLogSupplier implements Callable<String> {
         }
 
         // query the github api for releases
-        String releaseUrl = "https://api.github.com/repos/$owner/$repo/releases"
+        String releaseUrl = "${GithubApi.endpoint}/repos/$owner/$repo/releases"
         Response response = new OkHttpClient().newCall(createRequestWithHeaders(auth)
                 .url(releaseUrl)
                 .get()
@@ -112,7 +112,7 @@ class ChangeLogSupplier implements Callable<String> {
             // if current release does not exist, then gets the most recent release
             Object lastRelease = releases.get(index + 1)
             String lastTag = lastRelease.tag_name
-            String tagUrl = "https://api.github.com/repos/$owner/$repo/git/refs/tags/$lastTag"
+            String tagUrl = "${GithubApi.endpoint}/repos/$owner/$repo/git/refs/tags/$lastTag"
             Response tagResponse = new OkHttpClient()
                     .newCall(createRequestWithHeaders(auth)
                     .url(tagUrl)
