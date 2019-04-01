@@ -41,6 +41,7 @@ class ChangeLogSupplier implements Callable<String> {
     private final Property<CharSequence> currentCommit
     private final Property<CharSequence> lastCommit
     private final Property<List> options
+    private final OkHttpClient client = GithubApi.client
 
     ChangeLogSupplier(GithubReleaseExtension extension, Project project) {
         this.project = project
@@ -83,7 +84,7 @@ class ChangeLogSupplier implements Callable<String> {
 
         // query the github api for releases
         String releaseUrl = "${GithubApi.endpoint}/repos/$owner/$repo/releases"
-        Response response = new OkHttpClient().newCall(createRequestWithHeaders(auth)
+        Response response = client.newCall(createRequestWithHeaders(auth)
                 .url(releaseUrl)
                 .get()
                 .build()
@@ -113,7 +114,7 @@ class ChangeLogSupplier implements Callable<String> {
             Object lastRelease = releases.get(index + 1)
             String lastTag = lastRelease.tag_name
             String tagUrl = "${GithubApi.endpoint}/repos/$owner/$repo/git/refs/tags/$lastTag"
-            Response tagResponse = new OkHttpClient()
+            Response tagResponse = client
                     .newCall(createRequestWithHeaders(auth)
                     .url(tagUrl)
                     .get()

@@ -1,6 +1,7 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.6-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.6)
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.7-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.7)
 
+[i19]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/19
 [i17]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/17
 [i16]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/16
 [i14]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/14
@@ -14,6 +15,9 @@ This plugin is not endorsed by Github.
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
 
 ## Changelog
+2.2.7
+- Address [#19][i19]. Replaced mime type detector with Apache Tika.
+
 2.2.6
 - Address [#14][i14] with new property [`apiEndpoint`](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki#apiEndpoint)
 

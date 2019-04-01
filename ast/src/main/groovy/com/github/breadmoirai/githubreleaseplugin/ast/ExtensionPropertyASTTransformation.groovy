@@ -52,7 +52,7 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
 
         // create getter method
         // getPropertyProvider
-        def providerClassNode = createParameterizedNode(Provider, genericType)
+        final providerClassNode = createParameterizedNode(Provider, genericType)
         classNode.addMethod new MethodNode(
                 "get${fieldNameCap}Provider",
                 ACC_PROTECTED,
@@ -61,12 +61,13 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
                 [] as ClassNode[],
                 new ReturnStatement(fieldVar)
         ).tap {
-            it.addAnnotation new AnnotationNode(new ClassNode(Input))
+            addAnnotation new AnnotationNode(new ClassNode(Input))
         }
 
         //create setter methods
         // setProperty(T value)
-        def paramValue = new Parameter(genericType.type, fieldName)
+        final type = genericType.type
+        final paramValue = new Parameter(type, fieldName)
         classNode.addMethod(new MethodNode(
                 "set${fieldNameCap}",
                 ACC_PUBLIC,
@@ -87,8 +88,8 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
         ))
 
         // setProp(Provider<? extends T> value)
-        def providerWildClassNode = createParameterizedNode(Provider, GenericsUtils.buildWildcardType(genericType.type))
-        def paramProvider = new Parameter(providerWildClassNode, fieldName)
+        final providerWildClassNode = createParameterizedNode(Provider, GenericsUtils.buildWildcardType(type))
+        final paramProvider = new Parameter(providerWildClassNode, fieldName)
         classNode.addMethod(new MethodNode(
                 "set${fieldNameCap}",
                 ACC_PUBLIC,
@@ -109,7 +110,7 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
         ))
 
         // setProp(Callable<? extends T> callable)
-        def paramCallable = new Parameter(createParameterizedNode(Callable, GenericsUtils.buildWildcardType(genericType.type)), fieldName)
+        final paramCallable = new Parameter(createParameterizedNode(Callable, GenericsUtils.buildWildcardType(type)), fieldName)
         classNode.addMethod(new MethodNode(
                 "set${fieldNameCap}",
                 ACC_PUBLIC,
@@ -147,6 +148,29 @@ class ExtensionPropertyASTTransformation extends AbstractASTTransformation {
                         )
                 )
         ))
+
+        if (type.typeClass == CharSequence) {
+            final type1 = new ClassNode(String)
+            final paramValue1 = new Parameter(type1, fieldName)
+            classNode.addMethod(new MethodNode(
+                    "set${fieldNameCap}",
+                    ACC_PUBLIC,
+                    ClassHelper.VOID_TYPE,
+                    [paramValue1] as Parameter[],
+                    [] as ClassNode[],
+                    new ExpressionStatement(new MethodCallExpression(new FieldExpression(fieldNode), "set", new VariableExpression(paramValue1)))
+            ))
+
+            // prop(T value)
+            classNode.addMethod(new MethodNode(
+                    fieldName,
+                    ACC_PUBLIC,
+                    ClassHelper.VOID_TYPE,
+                    [paramValue1] as Parameter[],
+                    [] as ClassNode[],
+                    new ExpressionStatement(new MethodCallExpression(new FieldExpression(fieldNode), "set", new VariableExpression(paramValue1)))
+            ))
+        }
     }
 
     private static ClassNode createParameterizedNode(Class returnType, GenericsType genericType) {

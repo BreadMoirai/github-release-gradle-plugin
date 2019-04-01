@@ -23,7 +23,7 @@ plugins {
 }
 
 group = 'com.github.breadmoirai'
-version = '2.2.6'
+version = '2.2.7'
 
 repositories {
     jcenter()
@@ -34,9 +34,9 @@ repositories {
 dependencies {
     compileOnly project(':ast')
 
-    implementation 'org.codehaus.groovy:groovy-all:2.5.4'
+    implementation 'org.codehaus.groovy:groovy-all:2.5.6'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
-    compile 'com.j256.simplemagic:simplemagic:1.10'
+    compile group: 'org.apache.tika', name: 'tika-core', version: '1.20'
     compile 'org.zeroturnaround:zt-exec:1.10'
 
     compileOnly 'com.gradle.publish:plugin-publish-plugin:0.9.7'
