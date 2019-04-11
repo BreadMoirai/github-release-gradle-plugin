@@ -36,16 +36,17 @@ class GithubApi {
      * @return The response containing the status code, status message, response headers, and the body as an object
      */
     Response connect(String url, @DelegatesTo(Request.Builder) Closure closure) {
-        client.newCall(new Request.Builder().tap {
-            delegate.url url
-            defaultHeaders.each { name, value ->
-                header name, value
-            }
-            closure.setDelegate delegate
-            closure()
-        }.build()).execute().withCloseable { response ->
-            new Response(response.code(), response.message(), response.body().string(), response.headers().toMultimap())
+        def builder = new Request.Builder()
+        builder.url(url)
+        defaultHeaders.forEach { name, value ->
+            builder.header name, value
         }
+        closure.setDelegate(builder)
+        closure()
+        def response = client.newCall(builder.build()).execute()
+        def r = new Response(response.code(), response.message(), response.body().string(), response.headers().toMultimap())
+        response.close()
+        return r
     }
 
     Response findReleaseByTag(CharSequence owner, CharSequence repo, CharSequence tagName) {

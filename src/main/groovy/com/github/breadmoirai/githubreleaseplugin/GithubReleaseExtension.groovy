@@ -103,6 +103,7 @@ class GithubReleaseExtension {
     final ConfigurableFileCollection releaseAssets
 
     final Project project
+    private final ChangeLogSupplier changeLogSupplier
 
     @SuppressWarnings("GroovyAssignabilityCheck")
     GithubReleaseExtension(Project project) {
@@ -139,16 +140,16 @@ class GithubReleaseExtension {
         overwrite { false }
         allowUploadToExisting { false }
         apiEndpoint { GithubApi.endpoint }
+        changeLogSupplier = new ChangeLogSupplier(this, project)
     }
 
     Callable<String> changelog(@DelegatesTo(ChangeLogSupplier) final Closure closure) {
-        def c = new ChangeLogSupplier(this, project)
-        c.with closure
-        return c
+        changeLogSupplier.with closure
+        return changeLogSupplier
     }
 
     Callable<String> changelog() {
-        return new ChangeLogSupplier(this, project)
+        return changeLogSupplier
     }
 
     ConfigurableFileCollection getReleaseAssets() {

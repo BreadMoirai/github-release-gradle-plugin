@@ -16,8 +16,10 @@
 
 package com.github.breadmoirai.githubreleaseplugin
 
+import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
 import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
 import groovy.json.JsonSlurper
+import groovy.transform.Memoized
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -28,6 +30,7 @@ import org.zeroturnaround.exec.ProcessExecutor
 
 import java.util.concurrent.Callable
 
+@ExtensionClass
 class ChangeLogSupplier implements Callable<String> {
 
     private final Project project
@@ -37,10 +40,10 @@ class ChangeLogSupplier implements Callable<String> {
     private final Provider<CharSequence> authorization
     private final Provider<CharSequence> tag
 
-    private final Property<CharSequence> executable
-    private final Property<CharSequence> currentCommit
-    private final Property<CharSequence> lastCommit
-    private final Property<List> options
+    final Property<CharSequence> executable
+    final Property<CharSequence> currentCommit
+    final Property<CharSequence> lastCommit
+    final Property<List> options
     private final OkHttpClient client = GithubApi.client
 
     ChangeLogSupplier(GithubReleaseExtension extension, Project project) {
@@ -130,6 +133,7 @@ class ChangeLogSupplier implements Callable<String> {
     }
 
     @Override
+    @Memoized
     String call() {
         println ':githubRelease Generating Release Body with Commit History'
         CharSequence current = currentCommit.get()
@@ -154,104 +158,6 @@ class ChangeLogSupplier implements Callable<String> {
             }
             else throw e
         }
-    }
-
-
-
-    public void setCurrentCommit(Provider<? extends CharSequence> currentCommit) {
-        this.currentCommit.set(currentCommit)
-    }
-
-    public void currentCommit(Provider<? extends CharSequence> currentCommit) {
-        this.currentCommit.set(currentCommit)
-    }
-
-    public void setLastCommit(Provider<? extends CharSequence> lastCommit) {
-        this.lastCommit.set(lastCommit)
-    }
-
-    public void lastCommit(Provider<? extends CharSequence> lastCommit) {
-        this.lastCommit.set(lastCommit)
-    }
-
-    public void setOptions(Provider<List> options) {
-        this.options.set(options)
-    }
-
-    public void options(Provider<List> options) {
-        this.options.set(options)
-    }
-
-    public void setExecutable(Provider<CharSequence> gitExecutable) {
-        this.executable.set(gitExecutable)
-    }
-
-    public void executable(Provider<CharSequence> gitExecutable) {
-        this.executable.set(gitExecutable)
-    }
-
-    public void setCurrentCommit(Callable<? extends CharSequence> currentCommit) {
-        setCurrentCommit project.provider(currentCommit)
-    }
-
-    public void currentCommit(Callable<? extends CharSequence> currentCommit) {
-        setCurrentCommit project.provider(currentCommit)
-    }
-
-    public void setLastCommit(Callable<? extends CharSequence> lastCommit) {
-        setLastCommit project.provider(lastCommit)
-    }
-
-    public void lastCommit(Callable<? extends CharSequence> lastCommit) {
-        setLastCommit project.provider(lastCommit)
-    }
-
-    public void setOptions(Callable<List> options) {
-        setOptions project.provider(options)
-    }
-
-    public void options(Callable<List> options) {
-        setOptions project.provider(options)
-    }
-
-    public void setExecutable(Callable<CharSequence> gitExecutable) {
-        setExecutable project.provider(gitExecutable)
-    }
-
-    public void executable(Callable<CharSequence> gitExecutable) {
-        setExecutable project.provider(gitExecutable)
-    }
-
-    public void setCurrentCommit(CharSequence currentCommit) {
-        setCurrentCommit { currentCommit }
-    }
-
-    public void currentCommit(CharSequence currentCommit) {
-        setCurrentCommit { currentCommit }
-    }
-
-    public void setLastCommit(CharSequence lastCommit) {
-        setLastCommit { lastCommit }
-    }
-
-    public void lastCommit(CharSequence lastCommit) {
-        setLastCommit { lastCommit }
-    }
-
-    public void setOptions(List options) {
-        setOptions { options }
-    }
-
-    public void options(List options) {
-        setOptions { options }
-    }
-
-    public void setExecutable(CharSequence gitExecutable) {
-        setExecutable { gitExecutable }
-    }
-
-    public void executable(CharSequence gitExecutable) {
-        setExecutable { gitExecutable }
     }
 
     static Request.Builder createRequestWithHeaders(CharSequence authorization) {

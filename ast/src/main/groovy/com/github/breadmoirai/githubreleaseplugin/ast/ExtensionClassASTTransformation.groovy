@@ -30,7 +30,7 @@ class ExtensionClassASTTransformation extends AbstractASTTransformation {
         def transformation = new ExtensionPropertyASTTransformation()
         ClassNode node = astNodes[1] as ClassNode
         node.fields.each {
-            if (it.type.typeClass.name == Property.name) {
+            if (it.type.getPlainNodeReference().name == Property.name) {
                 transformation.visit([null, it] as ASTNode[], null)
             }
         }
