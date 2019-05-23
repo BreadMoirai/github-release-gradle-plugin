@@ -61,7 +61,7 @@ class ChangeLogSupplier implements Callable<String> {
         setExecutable 'git'
         setCurrentCommit "HEAD"
         setLastCommit { this.getLastReleaseCommit() }
-        setOptions(["--format=oneline", "--abbrev-commit", "--max-count=50"])
+        setOptions("--format=oneline", "--abbrev-commit", "--max-count=50")
     }
 
     /**
@@ -175,20 +175,19 @@ class ChangeLogSupplier implements Callable<String> {
     }
 
     public void setOptions(String... options) {
-        this.options.setAll(options)
+        this.options.set(options.toList())
     }
 
-    public void setOptions(Collection<? extends CharSequence> options) {
-        this.options.setAll options
+    public void setOptions(Iterable<? extends CharSequence> options) {
+        this.options.set options
     }
-
 
     public void options(String... options) {
-        this.options.setAll(options)
+        this.options.set(options.toList())
     }
 
-    public void options(Collection<? extends CharSequence> options) {
-        this.options.setAll options
+    public void options(Iterable<? extends CharSequence> options) {
+        this.options.set options
     }
 
     public void addOption(CharSequence option) {
