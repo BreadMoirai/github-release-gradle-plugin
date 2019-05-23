@@ -20,11 +20,11 @@ import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
 import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
 import groovy.json.JsonSlurper
 import groovy.transform.Memoized
-import javafx.beans.property.ListProperty
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.gradle.api.Project
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.zeroturnaround.exec.ProcessExecutor
