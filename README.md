@@ -3,6 +3,7 @@
 
 [i23]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/23
 [i22]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/22
+[i21]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/21
 [i20]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/20
 [i19]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/19
 [i17]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/17
@@ -19,7 +20,7 @@ This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST reques
 
 ## Changelog
 2.2.9
-- Address [#23][i23]. Multiple assets were being mistakenly uploaded with the same name.
+- Address [#21][i21] & [#23][i23]. Multiple assets were being mistakenly uploaded with the same name.
 - Address [#22][i22]. Remove deprecated gradle api call for list property.
  
 2.2.8
