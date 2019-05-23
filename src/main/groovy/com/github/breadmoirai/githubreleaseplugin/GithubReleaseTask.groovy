@@ -152,8 +152,8 @@ class GithubReleaseTask extends DefaultTask {
 
     private void uploadAssetsToUrl(GithubApi api, String url) {
         releaseAssets.files.each { asset ->
-            url = url.replace '{?name,label}', "?name=${URLEncoder.encode(asset.name, StandardCharsets.UTF_8.displayName())}"
-            def response = api.uploadFileToUrl url, asset
+            def encodedUrl = url.replace '{?name,label}', "?name=${URLEncoder.encode(asset.name, StandardCharsets.UTF_8.displayName())}"
+            def response = api.uploadFileToUrl encodedUrl, asset
             if (response.code != 201) {
                 System.err.println ":githubRelease FAILED TO UPLOAD $asset.name\n$response.code $response.message\n$response.body"
             }

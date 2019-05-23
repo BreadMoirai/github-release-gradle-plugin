@@ -23,7 +23,7 @@ plugins {
 }
 
 group = 'com.github.breadmoirai'
-version = '2.2.8'
+version = '2.2.9'
 
 repositories {
     jcenter()

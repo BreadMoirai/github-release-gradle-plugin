@@ -1,6 +1,8 @@
 # github-release
 [![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.8-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.8)
 
+[i23]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/23
+[i22]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/22
 [i20]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/20
 [i19]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/19
 [i17]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/17
@@ -16,6 +18,9 @@ This plugin is not endorsed by Github.
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
 
 ## Changelog
+2.2.9
+- Address [#23][i23]. Multiple assets were being mistakenly uploaded with the same name.
+
 2.2.8
 - Address [#20][i20]. Change minimum supported version for Gradle to 4.10+ down from 5.x
 
