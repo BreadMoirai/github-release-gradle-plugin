@@ -1,5 +1,5 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.8-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.8)
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.9-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.9)
 
 [i23]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/23
 [i22]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/22
@@ -130,7 +130,7 @@ body { """\
 ...
 
 ## ChangeLog
-${(changelog {}).get().replace('\n', '\n* ')}
+${changelog().call().replace('\n', '\n* ')}
 """ }
 ```
 
