@@ -20,7 +20,8 @@ This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST reques
 ## Changelog
 2.2.9
 - Address [#23][i23]. Multiple assets were being mistakenly uploaded with the same name.
-
+- Address [#22][i22]. Remove deprecated gradle api call for list property.
+ 
 2.2.8
 - Address [#20][i20]. Change minimum supported version for Gradle to 4.10+ down from 5.x
 

@@ -20,6 +20,7 @@ import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
 import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
 import groovy.json.JsonSlurper
 import groovy.transform.Memoized
+import javafx.beans.property.ListProperty
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -43,7 +44,7 @@ class ChangeLogSupplier implements Callable<String> {
     final Property<CharSequence> executable
     final Property<CharSequence> currentCommit
     final Property<CharSequence> lastCommit
-    final Property<List> options
+    final ListProperty<CharSequence> options
     private final OkHttpClient client = GithubApi.client
 
     ChangeLogSupplier(GithubReleaseExtension extension, Project project) {
@@ -56,7 +57,7 @@ class ChangeLogSupplier implements Callable<String> {
         this.executable = objects.property(CharSequence)
         this.currentCommit = objects.property(CharSequence)
         this.lastCommit = objects.property(CharSequence)
-        this.options = objects.property(List)
+        this.options = objects.listProperty(CharSequence)
         setExecutable 'git'
         setCurrentCommit "HEAD"
         setLastCommit { this.getLastReleaseCommit() }
@@ -171,5 +172,26 @@ class ChangeLogSupplier implements Callable<String> {
     @Override
     public String toString() {
         return call()
+    }
+
+    public void setOptions(String... options) {
+        this.options.setAll(options)
+    }
+
+    public void setOptions(Collection<? extends CharSequence> options) {
+        this.options.setAll options
+    }
+
+
+    public void options(String... options) {
+        this.options.setAll(options)
+    }
+
+    public void options(Collection<? extends CharSequence> options) {
+        this.options.setAll options
+    }
+
+    public void addOption(CharSequence option) {
+        this.options.add(option)
     }
 }
