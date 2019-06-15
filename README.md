@@ -99,7 +99,7 @@ githubRelease {
     draft false // by default this is false
     prerelease false // by default this is false
     releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release
-    override true // by default false; if set to true, will delete an existing release with the same tag and name
+    overwrite true // by default false; if set to true, will delete an existing release with the same tag and name
     apiEndpoint "https://api.github.com" // should only change for github enterprise users
 }
 ```
