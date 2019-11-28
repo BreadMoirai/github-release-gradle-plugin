@@ -1,6 +1,7 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.9-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.9)
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.10-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.10)
 
+[i27]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/27
 [i23]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/23
 [i22]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/22
 [i21]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/21
@@ -19,6 +20,9 @@ This plugin is not endorsed by Github.
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
 
 ## Changelog
+2.2.10
+- Address [#27][i27]. Http 307 Redirects are now respected.
+
 2.2.9
 - Address [#21][i21] & [#23][i23]. Multiple assets were being mistakenly uploaded with the same name.
 - Address [#22][i22]. Remove deprecated gradle api call for list property.
