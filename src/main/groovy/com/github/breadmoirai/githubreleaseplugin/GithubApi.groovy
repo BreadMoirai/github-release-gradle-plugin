@@ -44,6 +44,13 @@ class GithubApi {
         closure.setDelegate(builder)
         closure()
         def response = client.newCall(builder.build()).execute()
+        if (response.code() == 307) {
+            def location = response.header("Location")
+            if (location != null) {
+                println ':githubRelease FOLLOWING REDIRECT TO ' + location
+                return connect(location, closure)
+            }
+        }
         def r = new Response(response.code(), response.message(), response.body().string(), response.headers().toMultimap())
         response.close()
         return r
