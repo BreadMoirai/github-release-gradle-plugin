@@ -90,10 +90,8 @@ plugins {
 
 ```groovy
 githubRelease {
-    token "your token"// This is your personal access token with Repo permissions
-                        // You get this from your user settings > developer settings
-                        // If this value is not set, a login dialog will prompt you for your credentials.
-                        // 2fa is not supported
+    authorization "token <your token>" // This is your personal access token with Repo permissions
+                                       // You get this from your user settings > developer settings
     owner "breadmoirai" // default is the last part of your group. Eg group: "com.github.breadmoirai" => owner: "breadmoirai"
     repo "github-release" // by default this is set to your project name
     tagName "v1.0.0" // by default this is set to "v${project.version}"
