@@ -58,7 +58,6 @@ class GithubApi {
 
     Response findReleaseByTag(CharSequence owner, CharSequence repo, CharSequence tagName) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases/tags/$tagName"
-        println ':githubRelease CHECKING FOR PREVIOUS RELEASE'
         connect(releaseUrl) {
             get()
         }
@@ -72,14 +71,12 @@ class GithubApi {
     }
 
     Response deleteReleaseByUrl(String url) {
-        println ':githubRelease DELETING RELEASE'
         connect(url) {
             delete()
         }
     }
 
     Response uploadFileToUrl(String url, File asset) {
-        println ':githubRelease UPLOADING ' + asset.name
         connect(url) {
             put RequestBody.create(MediaType.parse(tika.detect(asset)), asset)
         }
@@ -87,7 +84,6 @@ class GithubApi {
 
     Response postRelease(CharSequence owner, CharSequence repo, Map data) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases"
-        println ':githubRelease CREATING NEW RELEASE'
         connect(releaseUrl) {
             post RequestBody.create(MEDIATYPE_JSON, JsonOutput.toJson(data))
         }
@@ -95,7 +91,6 @@ class GithubApi {
 
     Response getReleases(CharSequence owner, CharSequence repo) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases"
-        println ':githubRelease RETRIEVING RELEASES ' + releaseUrl
         connect(releaseUrl) {
             get()
         }

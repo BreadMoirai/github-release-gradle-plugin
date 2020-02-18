@@ -19,12 +19,14 @@ package com.github.breadmoirai.githubreleaseplugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class GithubReleasePlugin implements Plugin<Project> {
 
     private Project project
+    private GithubReleaseTask task
 
     @Override
     void apply(Project project) {
@@ -32,7 +34,7 @@ class GithubReleasePlugin implements Plugin<Project> {
 
         def ext = project.extensions.create('githubRelease', GithubReleaseExtension, project)
 
-        project.tasks.create('githubRelease', GithubReleaseTask) {
+        task = project.tasks.create('githubRelease', GithubReleaseTask) {
             it.with {
                 setAuthorization ext.authorizationProvider
                 setOwner ext.ownerProvider
@@ -46,9 +48,10 @@ class GithubReleasePlugin implements Plugin<Project> {
                 setReleaseAssets ext.releaseAssets
                 setOverwrite ext.overwriteProvider
                 setAllowUploadToExisting ext.allowUploadToExistingProvider
+                setDryRun ext.dryRunProvider
                 setApiEndpoint ext.apiEndpointProvider
             }
-        }
+        } as GithubReleaseTask
     }
 
 }

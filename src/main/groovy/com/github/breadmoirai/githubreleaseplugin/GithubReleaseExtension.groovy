@@ -77,6 +77,9 @@ import java.util.concurrent.Callable
  *             <td>false</td>
  *         </tr>
  *         <tr>
+ *             <td>dryRun</td>
+ *             <td>false</td>
+ *         <tr>
  *              <td>allowUploadToExisting</td>
  *              <td>false</td>
  *          </tr>
@@ -98,6 +101,7 @@ class GithubReleaseExtension {
     final Property<Boolean> prerelease
     final Property<Boolean> overwrite
     final Property<Boolean> allowUploadToExisting
+    final Property<Boolean> dryRun
     final Property<CharSequence> apiEndpoint
 
     final ConfigurableFileCollection releaseAssets
@@ -121,6 +125,7 @@ class GithubReleaseExtension {
         releaseAssets = project.files()
         overwrite = objectFactory.property(Boolean)
         allowUploadToExisting = objectFactory.property(Boolean)
+        dryRun = objectFactory.property(Boolean)
         apiEndpoint = objectFactory.property(CharSequence)
 
         owner {
@@ -140,6 +145,7 @@ class GithubReleaseExtension {
         overwrite { false }
         allowUploadToExisting { false }
         apiEndpoint { GithubApi.endpoint }
+        dryRun { false }
         changeLogSupplier = new ChangeLogSupplier(this, project)
     }
 

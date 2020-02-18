@@ -1,6 +1,7 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.10-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.10)
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.11-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.11)
 
+[i31]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/31
 [i27]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/27
 [i23]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/23
 [i22]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/22
@@ -11,6 +12,8 @@
 [i16]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/16
 [i14]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/14
 [i11]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/11
+[i5]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/5
+[i4]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/4
 
 
 A Gradle Plugin to send Releases to Github
@@ -20,6 +23,11 @@ This plugin is not endorsed by Github.
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
 
 ## Changelog
+2.2.11
+- Address [#31][i31] Added `dryRun` property. You can set this to `true` to show run the task without actually modifying anything.
+- Changed internal implementation of changelog generation. Please open an issue if the behavior is unexpected.
+- Note that Username and Password authentication with be disabled on July 1st, 2020 for the Github API.
+ 
 2.2.10
 - Address [#27][i27]. Http 307 Redirects are now respected.
 
@@ -51,8 +59,8 @@ This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST reques
 - new option [`allowUploadToExisting`](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki#allowUploadToExisting)
 
 2.2.1
-- Build with Java 8 Fix #4
-- Fix #5
+- Address [#5][i5]
+- Address [#4][i4] build with Java 8 
 
 2.2.0
 - Added more detailed information in [wiki](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki)
@@ -63,8 +71,17 @@ This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST reques
 
 [Gradle Plugin Page](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release)
 
-Build script snippet for use in all Gradle versions:
-```gradle
+
+Using the plugins DSL:
+
+```groovy
+plugins {
+  id "com.github.breadmoirai.github-release" version "2.2.11"
+}
+```
+Using legacy plugin application:
+
+```groovy
 buildscript {
   repositories {
     maven {
@@ -72,26 +89,21 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.com.github.breadmoirai:github-release:2.2.9"
+    classpath "gradle.plugin.com.github.breadmoirai:github-release:2.2.11"
   }
 }
 
 apply plugin: "com.github.breadmoirai.github-release"
 ```
 
-Build script snippet for new, incubating, plugin mechanism introduced in Gradle 2.1:
-```groovy
-plugins {
-  id "com.github.breadmoirai.github-release" version "2.2.9"
-}
-```
+
 
 ## Using this plugin
 
 ```groovy
 githubRelease {
-    authorization "token <your token>" // This is your personal access token with Repo permissions
-                                       // You get this from your user settings > developer settings
+    token "<your token>" // This is your personal access token with Repo permissions
+                         // You get this from your user settings > developer settings > Personal Access Tokens
     owner "breadmoirai" // default is the last part of your group. Eg group: "com.github.breadmoirai" => owner: "breadmoirai"
     repo "github-release" // by default this is set to your project name
     tagName "v1.0.0" // by default this is set to "v${project.version}"
@@ -101,7 +113,8 @@ githubRelease {
     draft false // by default this is false
     prerelease false // by default this is false
     releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release
-    overwrite true // by default false; if set to true, will delete an existing release with the same tag and name
+    overwrite false // by default false; if set to true, will delete an existing release with the same tag and name
+    dryRun false // by default false; you can use this to see what actions would be taken without making a release
     apiEndpoint "https://api.github.com" // should only change for github enterprise users
 }
 ```
