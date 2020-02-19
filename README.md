@@ -118,6 +118,8 @@ githubRelease {
     apiEndpoint "https://api.github.com" // should only change for github enterprise users
 }
 ```
+View more information on each field at the [WIKI](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki)
+
 For additional info on these fields please see the [Github API specification](https://developer.github.com/v3/repos/releases/#create-a-release).
 
 
@@ -130,9 +132,17 @@ body {
     return "wow"
 }
 ```
-#### Body Changelog
-By default, we provide a changelog when the body is not set via git commands.
-You can also customize it and or use it manually
+#### [Body Changelog](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki#changelog)
+This plugin also provides a way to retrieve a list of commits since your last release. This uses the commandline to call git 
+```groovy
+body changelog()
+// or
+body """\
+## CHANGELOG
+${changelog().call()}
+"""
+```
+The changelog can be modified as follows
 ```groovy
 body changelog {
     currentCommit "HEAD"
@@ -140,6 +150,7 @@ body changelog {
     options(["--format=oneline", "--abbrev-commit", "--max-count=50", "graph"])
 }
 ```
+You can also apply string operations to the result.
 ```groovy
 body { """\
 # Info
