@@ -17,6 +17,7 @@
 package com.github.breadmoirai.githubreleaseplugin
 
 import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
+import okhttp3.OkHttpClient
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
@@ -109,6 +110,8 @@ class GithubReleaseExtension {
     final Project project
     private final ChangeLogSupplier changeLogSupplier
 
+    public OkHttpClient client = GithubApi.client
+
     @SuppressWarnings("GroovyAssignabilityCheck")
     GithubReleaseExtension(Project project) {
         this.project = project
@@ -194,4 +197,17 @@ class GithubReleaseExtension {
         this.authorization.set(project.provider(token).map { "Token $it" })
     }
 
+    OkHttpClient getClient() {
+        return client
+    }
+
+    void setClient(OkHttpClient client) {
+        this.client = client
+        GithubApi.client = client
+    }
+
+    void client(OkHttpClient client) {
+        this.client = client
+        GithubApi.client = client
+    }
 }

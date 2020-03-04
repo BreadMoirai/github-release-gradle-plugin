@@ -1,6 +1,7 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.11-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.11)
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.12-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.12)
 
+[i32]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/32
 [i31]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/31
 [i27]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/27
 [i23]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/23
@@ -23,6 +24,9 @@ This plugin is not endorsed by Github.
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
 
 ## Changelog
+2.2.12
+- Address [#32][i32] Exposed the OkHttpClient with `client`.
+
 2.2.11
 - Address [#31][i31] Added `dryRun` property. You can set this to `true` to show run the task without actually modifying anything.
 - Changed internal implementation of changelog generation. Please open an issue if the behavior is unexpected.
@@ -76,7 +80,7 @@ Using the plugins DSL:
 
 ```groovy
 plugins {
-  id "com.github.breadmoirai.github-release" version "2.2.11"
+  id "com.github.breadmoirai.github-release" version "2.2.12"
 }
 ```
 Using legacy plugin application:
@@ -89,7 +93,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.com.github.breadmoirai:github-release:2.2.11"
+    classpath "gradle.plugin.com.github.breadmoirai:github-release:2.2.12"
   }
 }
 
@@ -113,9 +117,11 @@ githubRelease {
     draft false // by default this is false
     prerelease false // by default this is false
     releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release
+
     overwrite false // by default false; if set to true, will delete an existing release with the same tag and name
     dryRun false // by default false; you can use this to see what actions would be taken without making a release
     apiEndpoint "https://api.github.com" // should only change for github enterprise users
+    client // This is the okhttp client used for http requests
 }
 ```
 View more information on each field at the [WIKI](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki)

@@ -25,7 +25,7 @@ class GithubApi {
         ]
     }
 
-    public static final OkHttpClient client = new OkHttpClient()
+    public static OkHttpClient client = new OkHttpClient()
 
     /**
      * Opens the specified {@code url} and sends an http request after applying the {@code closure}.
