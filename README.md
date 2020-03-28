@@ -93,7 +93,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.com.github.breadmoirai:github-release:2.2.12"
+    classpath "com.github.breadmoirai:github-release:2.2.12"
   }
 }
 
