@@ -24,6 +24,16 @@ This plugin is not endorsed by Github.
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
 
 ## Changelog
+2.3.0
+- Update dependencies to latest version
+  - OkHttp 4.*, etc; Addressing #36
+- Update to Gradle 7
+- Changed default value of draft from `false` -> `true`
+- Setting draft to `false` and running the task with an existing release will now publish the release if it is an draft. If already published, will error with `RELEASE ALREADY EXISTS`
+- If draft is set to `false`, task will now first create the release with draft set to `true`, upload assets, and then update the release with draft set to `false`, publishing it. Addressing #28
+- Added configuration methods to the Task object
+- Added recipes for configuring tasks addressing #39
+
 2.2.12
 - Address [#32][i32] Exposed the OkHttpClient with `client`.
 

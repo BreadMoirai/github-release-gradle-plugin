@@ -17,16 +17,15 @@
 plugins {
     id 'groovy'
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '0.10.1'
-    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'com.gradle.plugin-publish' version '0.15.0'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'maven-publish'
 }
 
 group = 'com.github.breadmoirai'
-version = '2.2.12'
+version = '2.3.0'
 
 repositories {
-    jcenter()
     mavenCentral()
     maven { url = 'https://plugins.gradle.org/m2/' }
 }
@@ -34,12 +33,13 @@ repositories {
 dependencies {
     compileOnly project(':ast')
 
-    implementation 'org.codehaus.groovy:groovy-all:2.5.6'
-    compile 'com.squareup.okhttp3:okhttp:3.8.1'
-    compile group: 'org.apache.tika', name: 'tika-core', version: '1.20'
-    compile 'org.zeroturnaround:zt-exec:1.10'
+    implementation gradleApi()
+    implementation 'org.codehaus.groovy:groovy-all:3.0.7'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation group: 'org.apache.tika', name: 'tika-core', version: '2.0.0'
+    implementation 'org.zeroturnaround:zt-exec:1.12'
 
-    compileOnly 'com.gradle.publish:plugin-publish-plugin:0.9.7'
+    compileOnly 'com.gradle.publish:plugin-publish-plugin:0.15.0'
 
 //    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
 //        exclude(group: 'org.codehaus.groovy')

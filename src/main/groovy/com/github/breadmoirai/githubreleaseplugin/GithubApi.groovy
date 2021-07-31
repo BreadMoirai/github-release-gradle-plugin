@@ -78,14 +78,20 @@ class GithubApi {
 
     Response uploadFileToUrl(String url, File asset) {
         connect(url) {
-            put RequestBody.create(MediaType.parse(tika.detect(asset)), asset)
+            put RequestBody.create(asset, MediaType.parse(tika.detect(asset)))
         }
     }
 
     Response postRelease(CharSequence owner, CharSequence repo, Map data) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases"
         connect(releaseUrl) {
-            post RequestBody.create(MEDIATYPE_JSON, JsonOutput.toJson(data))
+            post RequestBody.create(JsonOutput.toJson(data), MEDIATYPE_JSON)
+        }
+    }
+
+    Response publishRelease(String url) {
+        connect(url) {
+            patch RequestBody.create(JsonOutput.toJson([draft: false]), MEDIATYPE_JSON)
         }
     }
 

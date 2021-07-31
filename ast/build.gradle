@@ -10,6 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:2.5.4'
+    implementation 'org.codehaus.groovy:groovy-all:3.0.7'
     implementation gradleApi()
 }

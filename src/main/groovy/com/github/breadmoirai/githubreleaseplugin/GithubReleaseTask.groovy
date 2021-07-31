@@ -17,18 +17,19 @@
 package com.github.breadmoirai.githubreleaseplugin
 
 import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
-import com.sun.org.apache.xml.internal.security.Init
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.Callable
 
 @ExtensionClass
 class GithubReleaseTask extends DefaultTask {
@@ -62,6 +63,7 @@ class GithubReleaseTask extends DefaultTask {
     @Input
     final Property<CharSequence> apiEndpoint
 
+    private final ChangeLogSupplier changeLogSupplier
     @Internal
     final Project project
 
@@ -83,6 +85,26 @@ class GithubReleaseTask extends DefaultTask {
         allowUploadToExisting = objectFactory.property(Boolean)
         dryRun = objectFactory.property(Boolean)
         apiEndpoint = objectFactory.property(CharSequence)
+
+        owner {
+            def group = project.group.toString()
+            return group.substring(group.lastIndexOf('.') + 1)
+        }
+        repo {
+            project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
+        }
+        tagName { "v${project.version}" }
+        targetCommitish { 'master' }
+        releaseName { "v${project.version}" }
+        draft { true }
+        prerelease { false }
+        // authorization has no default value
+        body { "" }
+        overwrite { false }
+        allowUploadToExisting { false }
+        apiEndpoint { GithubApi.endpoint }
+        dryRun { false }
+        changeLogSupplier = new ChangeLogSupplier(project, owner, repo, authorization, tagName, dryRun)
     }
 
     private void log(String message) {
@@ -94,6 +116,43 @@ class GithubReleaseTask extends DefaultTask {
 
     void setReleaseAssets(Object... assets) {
         this.releaseAssets.setFrom(assets)
+    }
+
+    void releaseAssets(Object... assets) {
+        this.releaseAssets.setFrom(assets)
+    }
+
+    void setToken(CharSequence token) {
+        this.authorization.set("Token $token")
+    }
+
+    void token(CharSequence token) {
+        this.authorization.set("Token $token")
+    }
+
+    void setToken(Provider<? extends CharSequence> token) {
+        this.authorization.set(token.map { "Token $it" })
+    }
+
+    void token(Provider<? extends CharSequence> token) {
+        this.authorization.set(token.map { "Token $it" })
+    }
+
+    void setToken(Callable<? extends CharSequence> token) {
+        this.authorization.set(project.provider(token).map { "Token $it" })
+    }
+
+    void token(Callable<? extends CharSequence> token) {
+        this.authorization.set(project.provider(token).map { "Token $it" })
+    }
+
+    Callable<String> changelog(@DelegatesTo(ChangeLogSupplier) final Closure closure) {
+        changeLogSupplier.with closure
+        return changeLogSupplier
+    }
+
+    Callable<String> changelog() {
+        return changeLogSupplier
     }
 
     @TaskAction
@@ -119,6 +178,22 @@ class GithubReleaseTask extends DefaultTask {
                     } else if (this.allowUploadToExisting.get() && (releaseAssets.size() > 0)) {
                         log 'UPLOADING ASSETS TO EXISTING RELEASE'
                         uploadAssetsToUrl api, previousRelease.body.upload_url as String
+                        if (!draft.get() && !previousRelease.body.draft) {
+                            log "PUBLISHING RELEASE"
+
+                            def publishResponse = api.publishRelease(previousRelease.body.url as String)
+                            if (publishResponse.code != 200) {
+                                throw new Error("Could not update Release with draft=false: " +
+                                        "$publishResponse.code $publishResponse.message/n$publishResponse.body")
+                            }
+                        }
+                    } else if (previousRelease.body.draft && !draft.get()) {
+                        log "PUBLISHING RELEASE"
+                        def publishResponse = api.publishRelease(previousRelease.body.url as String)
+                        if (publishResponse.code != 200) {
+                            throw new Error("Could not update Release with draft=false: " +
+                                    "$publishResponse.code $publishResponse.message/n$publishResponse.body")
+                        }
                     } else {
                         throw new Error(':githubRelease FAILED RELEASE ALREADY EXISTS')
                     }
@@ -157,7 +232,7 @@ class GithubReleaseTask extends DefaultTask {
                 target_commitish: targetCommitish.get(),
                 name            : releaseName.get(),
                 body            : body.get(),
-                draft           : draft.get(),
+                draft           : true,
                 prerelease      : prerelease.get()
         ]
         log """CREATING NEW RELEASE 
@@ -188,6 +263,14 @@ class GithubReleaseTask extends DefaultTask {
                 log 'UPLOADING ASSETS'
                 uploadAssetsToUrl api, response.body.upload_url as String
             }
+            if (!draft.get()) {
+                log "PUBLISHING RELEASE"
+                def publishResponse = api.publishRelease(response.body.url as String)
+                if (publishResponse.code != 200) {
+                    throw new Error("Could not update Release with draft=false: " +
+                        "$publishResponse.code $publishResponse.message/n$publishResponse.body")
+                }
+            }
         }
     }
 
@@ -206,5 +289,5 @@ class GithubReleaseTask extends DefaultTask {
             }
         }
     }
-
 }
+

@@ -141,7 +141,7 @@ class GithubReleaseExtension {
         tagName { "v${project.version}" }
         targetCommitish { 'master' }
         releaseName { "v${project.version}" }
-        draft { false }
+        draft { true }
         prerelease { false }
         // authorization has no default value
         body { "" }
@@ -149,7 +149,7 @@ class GithubReleaseExtension {
         allowUploadToExisting { false }
         apiEndpoint { GithubApi.endpoint }
         dryRun { false }
-        changeLogSupplier = new ChangeLogSupplier(this, project)
+        changeLogSupplier = new ChangeLogSupplier(project, owner, repo, authorization, tagName, dryRun)
     }
 
     Callable<String> changelog(@DelegatesTo(ChangeLogSupplier) final Closure closure) {
