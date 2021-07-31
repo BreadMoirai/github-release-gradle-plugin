@@ -1,8 +1,11 @@
 # github-release
 [![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.12-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.12)
 
+[i39]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/39
+[i36]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/36
 [i32]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/32
 [i31]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/31
+[i28]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/28
 [i27]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/27
 [i23]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/23
 [i22]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/22
@@ -26,13 +29,13 @@ This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST reques
 ## Changelog
 2.3.0
 - Update dependencies to latest version
-  - OkHttp 4.*, etc; Addressing #36
+  - OkHttp 4.*, etc; Addressing [#36][i36]
 - Update to Gradle 7
 - Changed default value of draft from `false` -> `true`
 - Setting draft to `false` and running the task with an existing release will now publish the release if it is an draft. If already published, will error with `RELEASE ALREADY EXISTS`
-- If draft is set to `false`, task will now first create the release with draft set to `true`, upload assets, and then update the release with draft set to `false`, publishing it. Addressing #28
+- If draft is set to `false`, task will now first create the release with draft set to `true`, upload assets, and then update the release with draft set to `false`, publishing it. Addressing [#28][i28]
 - Added configuration methods to the Task object
-- Added recipes for configuring tasks addressing #39
+- Added recipes for configuring tasks addressing [#39][i39]
 
 2.2.12
 - Address [#32][i32] Exposed the OkHttpClient with `client`.
