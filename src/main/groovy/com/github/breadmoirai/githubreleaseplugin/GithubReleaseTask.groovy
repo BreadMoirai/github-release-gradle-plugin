@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+//file:noinspection unused
 
 package com.github.breadmoirai.githubreleaseplugin
 
@@ -268,7 +269,7 @@ class GithubReleaseTask extends DefaultTask {
                 def publishResponse = api.publishRelease(response.body.url as String)
                 if (publishResponse.code != 200) {
                     throw new Error("Could not update Release with draft=false: " +
-                        "$publishResponse.code $publishResponse.message/n$publishResponse.body")
+                            "$publishResponse.code $publishResponse.message/n$publishResponse.body")
                 }
             }
         }
@@ -285,7 +286,7 @@ class GithubReleaseTask extends DefaultTask {
             def encodedUrl = url.replace '{?name,label}', "?name=${URLEncoder.encode(asset.name, StandardCharsets.UTF_8.displayName())}"
             def response = api.uploadFileToUrl encodedUrl, asset
             if (response.code != 201) {
-                System.err.println ":githubRelease FAILED TO UPLOAD $asset.name\n$response.code $response.message\n$response.body"
+                throw new Error(":githubRelease FAILED TO UPLOAD $asset.name\n$response.code $response.message\n$response.body")
             }
         }
     }

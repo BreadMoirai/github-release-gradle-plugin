@@ -33,7 +33,7 @@ This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST reques
 - Update to Gradle 7
 - Changed default value of draft from `false` -> `true`
 - Setting draft to `false` and running the task with an existing release will now publish the release if it is an draft. If already published, will error with `RELEASE ALREADY EXISTS`
-- If draft is set to `false`, task will now first create the release with draft set to `true`, upload assets, and then update the release with draft set to `false`, publishing it. Addressing [#28][i28]
+- If draft is set to `false`, task will now first create the release with draft set to `true`, upload assets, and then update the release with draft set to `false`, publishing it. Addressing [#28][i28].
 - Added configuration methods to the Task object
 - Added recipes for configuring tasks addressing [#39][i39]
 
@@ -93,7 +93,7 @@ Using the plugins DSL:
 
 ```groovy
 plugins {
-  id "com.github.breadmoirai.github-release" version "2.2.12"
+  id "com.github.breadmoirai.github-release" version "2.3.0"
 }
 ```
 Using legacy plugin application:
@@ -106,7 +106,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "com.github.breadmoirai:github-release:2.2.12"
+    classpath "com.github.breadmoirai:github-release:2.3.0"
   }
 }
 
@@ -127,9 +127,9 @@ githubRelease {
     targetCommitish "master" // by default this is set to "master"
     releaseName "v1.0.0" // Release title, by default this is the same as the tagName
     body "" // by default this is empty
-    draft false // by default this is false
+    draft true // by default this is true
     prerelease false // by default this is false
-    releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release
+    releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release, by default this is empty
 
     overwrite false // by default false; if set to true, will delete an existing release with the same tag and name
     dryRun false // by default false; you can use this to see what actions would be taken without making a release

@@ -8,6 +8,7 @@ import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Internal
 
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
@@ -19,7 +20,10 @@ class ExtensionClassASTTransformation extends AbstractASTTransformation {
         ClassNode node = astNodes[1] as ClassNode
         node.fields.each {
             if (it.type.getPlainNodeReference().name == Property.name) {
-                transformation.visit([null, it] as ASTNode[], null)
+                if (!it.annotations.any {
+                    it.classNode.getPlainNodeReference().name == Internal.name
+                })
+                    transformation.visit([null, it] as ASTNode[], null)
             }
         }
     }
