@@ -16,21 +16,16 @@
 
 package com.github.breadmoirai.githubreleaseplugin
 
-import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
-import com.sun.org.apache.xml.internal.security.Init
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.charset.StandardCharsets
 
-@ExtensionClass
 class GithubReleaseTask extends DefaultTask {
 
     @Input
@@ -62,11 +57,8 @@ class GithubReleaseTask extends DefaultTask {
     @Input
     final Property<CharSequence> apiEndpoint
 
-    @Internal
-    final Project project
 
     GithubReleaseTask() {
-        this.project = super.project
         this.setGroup('publishing')
         final ObjectFactory objectFactory = project.objects
         owner = objectFactory.property(CharSequence)
@@ -193,7 +185,7 @@ class GithubReleaseTask extends DefaultTask {
 
     private void uploadAssetsToUrl(GithubApi api, String url) {
         for (asset in releaseAssets.files) {
-            log 'UPLOADING ' + project.projectDir.toPath().resolve(asset.toPath())
+            log 'UPLOADING ' + asset
             if (asset.size() == 0) {
                 log "CANNOT UPLOAD ${asset.name} with file size 0"
                 continue
