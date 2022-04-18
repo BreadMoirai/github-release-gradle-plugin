@@ -51,7 +51,7 @@ import java.util.concurrent.Callable
  *         </tr>
  *         <tr>
  *             <td>targetCommitish</td>
- *             <td>'master'</td>
+ *             <td>'main'</td>
  *         </tr>
  *         <tr>
  *             <td>releaseName</td>
@@ -139,7 +139,7 @@ class GithubReleaseExtension {
             project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
         }
         tagName { "v${project.version}" }
-        targetCommitish { 'master' }
+        targetCommitish { 'main' }
         releaseName { "v${project.version}" }
         draft { true }
         prerelease { false }
