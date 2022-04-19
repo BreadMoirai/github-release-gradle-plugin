@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - 2019 BreadMoirai (Ton Ly)
+ * Copyright (c) 2017 - 2022 BreadMoirai (Ton Ly)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,8 @@ package com.github.breadmoirai.githubreleaseplugin
 
 import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
 import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
-import groovy.json.JsonSlurper
 import groovy.transform.Memoized
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
 import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -49,14 +46,19 @@ class ChangeLogSupplier implements Callable<String> {
     final ListProperty<CharSequence> options
     private final OkHttpClient client = GithubApi.client
 
-    ChangeLogSupplier(GithubReleaseExtension extension, Project project) {
+    ChangeLogSupplier(Project project,
+                      Provider<CharSequence> ownerProvider,
+                      Provider<CharSequence> repoProvider,
+                      Provider<CharSequence> authorizationProvider,
+                      Provider<CharSequence> tagProvider,
+                      Provider<Boolean> dryRunProvider) {
         this.project = project
         def objects = project.objects
-        this.owner = extension.ownerProvider
-        this.repo = extension.repoProvider
-        this.authorization = extension.authorizationProvider
-        this.tag = extension.tagNameProvider
-        this.dryRun = extension.dryRun
+        this.owner = ownerProvider
+        this.repo = repoProvider
+        this.authorization = authorizationProvider
+        this.tag = tagProvider
+        this.dryRun = dryRunProvider
         this.executable = objects.property(CharSequence)
         this.currentCommit = objects.property(CharSequence)
         this.lastCommit = objects.property(CharSequence)

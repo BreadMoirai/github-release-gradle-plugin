@@ -1,5 +1,5 @@
 /*
- *    Copyright 2017 - 2018 BreadMoirai (Ton Ly)
+ *    Copyright 2017 - 2022 BreadMoirai (Ton Ly)
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,29 +17,29 @@
 plugins {
     id 'groovy'
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '0.10.1'
-    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'com.gradle.plugin-publish' version '1.0.0-rc-1'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'maven-publish'
 }
 
 group = 'com.github.breadmoirai'
-version = '2.2.12'
+version = '2.3.7'
 
 repositories {
-    jcenter()
     mavenCentral()
     maven { url = 'https://plugins.gradle.org/m2/' }
 }
 
 dependencies {
-    compileOnly project(':ast')
+    implementation project(':ast')
 
-    implementation 'org.codehaus.groovy:groovy-all:2.5.6'
-    compile 'com.squareup.okhttp3:okhttp:3.8.1'
-    compile group: 'org.apache.tika', name: 'tika-core', version: '1.20'
-    compile 'org.zeroturnaround:zt-exec:1.10'
+    implementation gradleApi()
+    implementation 'org.codehaus.groovy:groovy-all:3.0.9'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation group: 'org.apache.tika', name: 'tika-core', version: '2.0.0'
+    implementation 'org.zeroturnaround:zt-exec:1.12'
 
-    compileOnly 'com.gradle.publish:plugin-publish-plugin:0.9.7'
+//    compileOnly 'com.gradle.publish:plugin-publish-plugin:1.0.0-rc-1'
 
 //    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
 //        exclude(group: 'org.codehaus.groovy')
@@ -53,20 +53,19 @@ gradlePlugin {
     plugins.create('github-release') {
         id = 'com.github.breadmoirai.github-release'
         implementationClass = 'com.github.breadmoirai.githubreleaseplugin.GithubReleasePlugin'
+        displayName = 'Github Release Plugin'
+        description = 'A Gradle Plugin to send Releases to Github '
+
     }
 }
 
 pluginBundle {
     website = 'https://github.com/BreadMoirai/github-release-gradle-plugin'
     vcsUrl = 'https://github.com/BreadMoirai/github-release-gradle-plugin'
-    description = 'A Gradle Plugin to send Releases to Github '
     tags = ['github', 'release']
-
-    plugins.getByName('github-release') {
-        id = 'com.github.breadmoirai.github-release'
-        displayName = 'Github Release Plugin'
-    }
 }
+
+shadowJar.archiveClassifier.set ''
 
 task createPluginClasspath {
     def outputDir = file("${buildDir}/resources/test")
@@ -80,3 +79,9 @@ task createPluginClasspath {
     }
 }
 test.dependsOn(createPluginClasspath)
+
+afterEvaluate {
+    tasks.named('generateMetadataFileForPluginMavenPublication') {
+        dependsOn('jar')
+    }
+}
