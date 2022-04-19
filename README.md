@@ -1,5 +1,5 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.12-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.12)
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.3.7-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.3.7)
 
 [p42]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/42
 [p41]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/41
@@ -99,7 +99,7 @@ Using the plugins DSL:
 
 ```groovy
 plugins {
-  id "com.github.breadmoirai.github-release" version "2.3.0"
+  id "com.github.breadmoirai.github-release" version "2.3.7"
 }
 ```
 Using legacy plugin application:
@@ -112,7 +112,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "com.github.breadmoirai:github-release:2.3.0"
+    classpath "com.github.breadmoirai:github-release:2.3.7"
   }
 }
 
