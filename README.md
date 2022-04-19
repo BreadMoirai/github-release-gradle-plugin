@@ -1,7 +1,12 @@
 # github-release
 [![Gradle Plugin Portal](https://img.shields.io/badge/version-2.2.12-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.2.12)
 
+[p42]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/42
+[p41]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/41
+[p38]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/38
+[i40]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/40
 [i39]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/39
+[i37]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/37
 [i36]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/36
 [i32]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/32
 [i31]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/31
@@ -25,17 +30,18 @@ A Gradle Plugin to send Releases to Github
 This plugin is not endorsed by Github.
 
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
+## Known Issues
+If you are using multiple GithubRelease tasks to compose a single release, the release must be published `draft=false` with the first task. Currently, the plugin cannot find an existing release if it is a draft.
 
 ## Changelog
-2.3.0
+2.3.7
 - Update dependencies to latest version
   - OkHttp 4.*, etc; Addressing [#36][i36]
-- Update to Gradle 7
-- Changed default value of draft from `false` -> `true`
-- Setting draft to `false` and running the task with an existing release will now publish the release if it is an draft. If already published, will error with `RELEASE ALREADY EXISTS`
-- If draft is set to `false`, task will now first create the release with draft set to `true`, upload assets, and then update the release with draft set to `false`, publishing it. Addressing [#28][i28].
-- Added configuration methods to the Task object
+- Update to Gradle 7; Addressing [#40][i40]
+- Setting draft to `false` and running the task with an existing release will now publish the release if it is a draft. If already published, will error with `RELEASE ALREADY EXISTS`
+- If draft is set to `false`, task will now first create the release with draft set to `true`, upload assets, and then update the release with draft set to `false`, publishing it. Addressing [#28][i28]. Does not work if steps are split up into separate tasks
 - Added recipes for configuring tasks addressing [#39][i39]
+- Merged [#38][p38], [#41][p41], [#42][p42]
 
 2.2.12
 - Address [#32][i32] Exposed the OkHttpClient with `client`.
@@ -121,19 +127,19 @@ apply plugin: "com.github.breadmoirai.github-release"
 githubRelease {
     token "<your token>" // This is your personal access token with Repo permissions
                          // You get this from your user settings > developer settings > Personal Access Tokens
-    owner "breadmoirai" // default is the last part of your group. Eg group: "com.github.breadmoirai" => owner: "breadmoirai"
-    repo "github-release" // by default this is set to your project name
-    tagName "v1.0.0" // by default this is set to "v${project.version}"
-    targetCommitish "main" // by default this is set to "main"
-    releaseName "v1.0.0" // Release title, by default this is the same as the tagName
-    body "" // by default this is empty
-    draft true // by default this is true
-    prerelease false // by default this is false
+    owner.set "breadmoirai" // default is the last part of your group. Eg group: "com.github.breadmoirai" => owner: "breadmoirai"
+    repo.set "github-release" // by default this is set to your project name
+    tagName.set "v1.0.0" // by default this is set to "v${project.version}"
+    targetCommitish.set "main" // by default this is set to "main"
+    releaseName.set "v1.0.0" // Release title, by default this is the same as the tagName
+    body.set "" // by default this is empty
+    draft.set true // by default this is true
+    prerelease.set false // by default this is false
     releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release, by default this is empty
-
-    overwrite false // by default false; if set to true, will delete an existing release with the same tag and name
-    dryRun false // by default false; you can use this to see what actions would be taken without making a release
-    apiEndpoint "https://api.github.com" // should only change for github enterprise users
+    allowUploadToExisting.set false // Setting this to true will allow this plugin to upload artifacts to a release if it found an existing one. If overwrite is set to true, this option is ignored.  
+    overwrite.set false // by default false; if set to true, will delete an existing release with the same tag and name
+    dryRun.set false // by default false; you can use this to see what actions would be taken without making a release
+    apiEndpoint.set "https://api.github.com" // should only change for github enterprise users
     client // This is the okhttp client used for http requests
 }
 ```
@@ -144,40 +150,40 @@ For additional info on these fields please see the [Github API specification](ht
 
 ### Additional Tips:
 
-All properties except releaseAssets support using a closure to defer evaluation.
+You can use a provider with a closure to defer evaluation.
 ```groovy
-body {
+body provider({
     //do something intensive
     return "wow"
-}
+})
 ```
 #### [Body Changelog](https://github.com/BreadMoirai/github-release-gradle-plugin/wiki#changelog)
 This plugin also provides a way to retrieve a list of commits since your last release. This uses the commandline to call git 
 ```groovy
-body changelog()
+body provider(changelog())
 // or
-body """\
+body provider { """\
 ## CHANGELOG
 ${changelog().call()}
-"""
+""" }
 ```
 The changelog can be modified as follows
 ```groovy
-body changelog {
+body provider(changelog {
     currentCommit "HEAD"
     lastCommit "HEAD~10"
     options(["--format=oneline", "--abbrev-commit", "--max-count=50", "graph"])
-}
+})
 ```
 You can also apply string operations to the result.
 ```groovy
-body { """\
+body provider({ """\
 # Info
 ...
 
 ## ChangeLog
 ${changelog().call().replace('\n', '\n* ')}
-""" }
+""" })
 ```
 
 
@@ -189,5 +195,7 @@ You can avoid removing irrelevant files from your selected directory each time y
 For Example 
 ```groovy
 FilenameFilter filter = { dir, filename -> filename.contains(project.version) }
-releaseAssets = jar.destinationDir.listFiles filter
+releaseAssets jar.destinationDir.asFileTree.listFiles filter
+// or
+releaseAssets jar.archiveFile
 ```
