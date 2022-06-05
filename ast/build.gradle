@@ -10,6 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:3.0.9'
     implementation gradleApi()
+    testImplementation 'org.codehaus.groovy:groovy-test:3.0.9'
 }
