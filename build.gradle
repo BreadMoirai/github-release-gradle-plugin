@@ -67,6 +67,10 @@ pluginBundle {
 
 shadowJar.archiveClassifier.set ''
 
+validatePlugins {
+    enableStricterValidation = true
+}
+
 task createPluginClasspath {
     def outputDir = file("${buildDir}/resources/test")
 
