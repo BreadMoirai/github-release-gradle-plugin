@@ -23,9 +23,11 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
 import java.nio.charset.StandardCharsets
 
+@DisableCachingByDefault(because = "Not worth caching")
 class GithubReleaseTask extends DefaultTask {
 
     @Input
