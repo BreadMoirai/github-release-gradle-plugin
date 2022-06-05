@@ -22,6 +22,8 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 
@@ -49,6 +51,7 @@ class GithubReleaseTask extends DefaultTask {
     @Input
     final Property<Boolean> prerelease
     @InputFiles
+    @PathSensitive(PathSensitivity.ABSOLUTE)
     final ConfigurableFileCollection releaseAssets
     @Input
     final Property<Boolean> overwrite
