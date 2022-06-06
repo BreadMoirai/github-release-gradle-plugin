@@ -34,6 +34,7 @@ dependencies {
     implementation project(':ast')
 
     implementation gradleApi()
+
     implementation 'org.codehaus.groovy:groovy-all:3.0.9'
     implementation('com.squareup.okhttp3:okhttp:4.9.3') {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
@@ -69,6 +70,10 @@ pluginBundle {
 }
 
 shadowJar.archiveClassifier.set ''
+
+validatePlugins {
+    enableStricterValidation = true
+}
 
 task createPluginClasspath {
     def outputDir = file("${buildDir}/resources/test")
