@@ -169,14 +169,14 @@ class GithubReleaseTask extends DefaultTask {
 
         log """CREATING NEW RELEASE 
 {
-    tag_name         = ${tagValue}
-    target_commitish = ${targetCommitish.get()}
-    name             = ${releaseName.get()}
+    tag_name               = ${tagValue}
+    target_commitish       = ${targetCommitish.get()}
+    name                   = ${releaseName.get()}
     generate_release_notes = ${generateReleaseNotes.get()}
-    body             = 
+    body                   = 
         ${body.get().replace('\n': '\n\t\t')}
-    draft            = ${draft.get()}
-    prerelease       = ${prerelease.get()}
+    draft                  = ${draft.get()}
+    prerelease             = ${prerelease.get()}
 }"""
 
         if (dryRun.get()) {
