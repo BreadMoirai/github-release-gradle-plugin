@@ -16,6 +16,7 @@
 
 package com.github.breadmoirai.githubreleaseplugin
 
+import com.github.breadmoirai.githubreleaseplugin.GithubApi
 import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
 import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
 import groovy.transform.Memoized
