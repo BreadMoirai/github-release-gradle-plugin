@@ -45,6 +45,8 @@ class GithubReleaseTask extends DefaultTask {
     @Input
     final Property<CharSequence> releaseName
     @Input
+    final Property<Boolean> generateReleaseNotes
+    @Input
     final Property<CharSequence> body
     @Input
     final Property<Boolean> draft
@@ -62,7 +64,6 @@ class GithubReleaseTask extends DefaultTask {
     @Input
     final Property<CharSequence> apiEndpoint
 
-
     GithubReleaseTask() {
         this.setGroup('publishing')
         final ObjectFactory objectFactory = project.objects
@@ -72,6 +73,7 @@ class GithubReleaseTask extends DefaultTask {
         tagName = objectFactory.property(CharSequence)
         targetCommitish = objectFactory.property(CharSequence)
         releaseName = objectFactory.property(CharSequence)
+        generateReleaseNotes = objectFactory.property(Boolean)
         body = objectFactory.property(CharSequence)
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
@@ -156,23 +158,27 @@ class GithubReleaseTask extends DefaultTask {
     private void createRelease(GithubApi api, CharSequence ownerValue, CharSequence repoValue, CharSequence tagValue) {
 
         def values = [
-                tag_name        : tagValue,
-                target_commitish: targetCommitish.get(),
-                name            : releaseName.get(),
-                body            : body.get(),
-                draft           : (releaseAssets.size() > 0) ? false : draft.get(),
-                prerelease      : prerelease.get()
+                tag_name              : tagValue,
+                target_commitish      : targetCommitish.get(),
+                name                  : releaseName.get(),
+                generate_release_notes: generateReleaseNotes.get(),
+                body                  : body.get(),
+                draft                 : (releaseAssets.size() > 0) ? false : draft.get(),
+                prerelease            : prerelease.get(),
         ]
+
         log """CREATING NEW RELEASE 
 {
-    tag_name         = ${tagValue}
-    target_commitish = ${targetCommitish.get()}
-    name             = ${releaseName.get()}
-    body             = 
+    tag_name               = ${tagValue}
+    target_commitish       = ${targetCommitish.get()}
+    name                   = ${releaseName.get()}
+    generate_release_notes = ${generateReleaseNotes.get()}
+    body                   = 
         ${body.get().replace('\n': '\n\t\t')}
-    draft            = ${draft.get()}
-    prerelease       = ${prerelease.get()}
+    draft                  = ${draft.get()}
+    prerelease             = ${prerelease.get()}
 }"""
+
         if (dryRun.get()) {
             uploadAssetsToUrl null, null
             return

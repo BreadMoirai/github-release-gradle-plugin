@@ -23,7 +23,6 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
 
 import java.util.concurrent.Callable
 
@@ -59,8 +58,12 @@ import java.util.concurrent.Callable
  *             <td>'v' + project.version</td>
  *         </tr>
  *         <tr>
+ *             <td>generateReleaseNotes</td>
+ *             <td>false</td>
+ *         </tr>
+ *         <tr>
  *             <td>body</td>
- *             <td>list of commits since last release</td>
+ *             <td>""</td>
  *         </tr>
  *         <tr>
  *             <td>draft</td>
@@ -99,6 +102,7 @@ class GithubReleaseExtension {
     final Property<CharSequence> tagName
     final Property<CharSequence> targetCommitish
     final Property<CharSequence> releaseName
+    final Property<Boolean> generateReleaseNotes
     final Property<CharSequence> body
     final Property<Boolean> draft
     final Property<Boolean> prerelease
@@ -124,6 +128,7 @@ class GithubReleaseExtension {
         tagName = objectFactory.property(CharSequence)
         targetCommitish = objectFactory.property(CharSequence)
         releaseName = objectFactory.property(CharSequence)
+        generateReleaseNotes = objectFactory.property(Boolean)
         body = objectFactory.property(CharSequence)
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
@@ -146,6 +151,7 @@ class GithubReleaseExtension {
         draft { false }
         prerelease { false }
         // authorization has no default value
+        generateReleaseNotes { false }
         body { "" }
         overwrite { false }
         allowUploadToExisting { false }

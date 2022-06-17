@@ -42,6 +42,7 @@ class GithubReleasePlugin implements Plugin<Project> {
                 setTagName ext.tagNameProvider
                 setTargetCommitish ext.targetCommitishProvider
                 setReleaseName ext.releaseNameProvider
+                setGenerateReleaseNotes ext.generateReleaseNotesProvider
                 setBody ext.bodyProvider
                 setDraft ext.draftProvider
                 setPrerelease ext.prereleaseProvider
