@@ -23,7 +23,7 @@ plugins {
 }
 
 group = 'com.github.breadmoirai'
-version = '2.3.7'
+version = '2.4.1'
 
 repositories {
     mavenCentral()
@@ -35,7 +35,6 @@ dependencies {
 
     implementation gradleApi()
 
-    implementation 'org.codehaus.groovy:groovy-all:3.0.9'
     implementation('com.squareup.okhttp3:okhttp:4.9.3') {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-common'

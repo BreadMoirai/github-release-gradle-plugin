@@ -1,5 +1,5 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.3.7-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.3.7)
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.4.1-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.4.1)
 
 [i51]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/51
 [p42]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/42
@@ -31,12 +31,14 @@ A Gradle Plugin to send Releases to Github
 This plugin is not endorsed by Github.
 
 This plugin uses [OkHttp](http://square.github.io/okhttp/) to send a POST requests to the github api that creates a release and uploads specified assets.
+
 ## Known Issues
-If you are using multiple GithubRelease tasks to compose a single release, the release must be published `draft=false` with the first task. Currently, the plugin cannot find an existing release if it is a draft.
+If you are using multiple GithubRelease tasks to compose a single release, the release must be published `draft=false` with the first task. Currently, the plugin cannot find an existing release if it is a draft.  
+Some version numbers are skipped because of issues with the gradle plugin portal.
 
 ## Changelog
-2.4.0
-- Add support for GitHub generated release notes with `generateReleaseNotes: true`. If a name is not provided one will be generated. If a body is provided it will be pre-pended to the auto generated notes. Fixes [#51](i51).
+2.4.1
+- Add support for GitHub generated release notes with `generateReleaseNotes: true`. If a name is not provided one will be generated. If a body is provided it will be pre-pended to the auto generated notes. Fixes [#51][i51].
 
 2.3.7
 - Update dependencies to latest version
