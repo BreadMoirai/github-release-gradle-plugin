@@ -105,7 +105,7 @@ Using the plugins DSL:
 
 ```groovy
 plugins {
-  id "com.github.breadmoirai.github-release" version "2.3.7"
+  id "com.github.breadmoirai.github-release" version "2.4.1"
 }
 ```
 Using legacy plugin application:
@@ -113,12 +113,10 @@ Using legacy plugin application:
 ```groovy
 buildscript {
   repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
+    gradlePluginPortal()
   }
   dependencies {
-    classpath "com.github.breadmoirai:github-release:2.3.7"
+    classpath "com.github.breadmoirai:github-release:2.4.1"
   }
 }
 
