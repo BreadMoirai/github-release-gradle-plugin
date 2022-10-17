@@ -97,45 +97,40 @@ class GithubReleaseTask extends DefaultTask {
 
     @TaskAction
     void publishRelease() {
-        try {
-            if (dryRun.get()) {
-                log "This task is a dry run. All API calls that would modify the repo are disabled. API calls that access the repo information are not disabled. Use this to show what actions would be executed."
-            }
-            GithubApi.endpoint = apiEndpoint.get()
-            final CharSequence authValue = authorization.get()
-            final GithubApi api = new GithubApi(authValue)
-            final CharSequence ownerValue = owner.get()
-            final CharSequence repoValue = repo.get()
-            final CharSequence tagValue = tagName.get()
-            log 'CHECKING FOR PREVIOUS RELEASE'
-            def previousRelease = api.findReleaseByTag ownerValue, repoValue, tagValue
-            switch (previousRelease.code) {
-                case 200:
-                    log "EXISTING RELEASE FOUND ${previousRelease.body.html_url}"
-                    if (this.overwrite.get()) {
-                        deleteRelease(api, previousRelease)
-                        createRelease(api, ownerValue, repoValue, tagValue)
-                    } else if (this.allowUploadToExisting.get() && (releaseAssets.size() > 0)) {
-                        log 'UPLOADING ASSETS TO EXISTING RELEASE'
-                        uploadAssetsToUrl api, previousRelease.body.upload_url as String
-                        if (!draft.get()) {
-                            api.patchReleaseAsPublished(previousRelease.body.url as String)
-                        }
-                    } else if (previousRelease.body.draft as Boolean) {
-                        api.patchReleaseAsPublished(previousRelease.body.url as String)
-                    } else {
-                        throw new Error(':githubRelease FAILED RELEASE ALREADY EXISTS')
-                    }
-                    break
-                case 404:
-                    createRelease(api, ownerValue, repoValue, tagValue)
-                    break
-                default:
-                    throw new Error(":githubRelease FAILED $previousRelease.code $previousRelease.message\n$previousRelease.body")
-            }
+        if (dryRun.get()) {
+            log "This task is a dry run. All API calls that would modify the repo are disabled. API calls that access the repo information are not disabled. Use this to show what actions would be executed."
         }
-        catch (Exception e) {
-            e.printStackTrace()
+        GithubApi.endpoint = apiEndpoint.get()
+        final CharSequence authValue = authorization.get()
+        final GithubApi api = new GithubApi(authValue)
+        final CharSequence ownerValue = owner.get()
+        final CharSequence repoValue = repo.get()
+        final CharSequence tagValue = tagName.get()
+        log 'CHECKING FOR PREVIOUS RELEASE'
+        def previousRelease = api.findReleaseByTag ownerValue, repoValue, tagValue
+        switch (previousRelease.code) {
+            case 200:
+                log "EXISTING RELEASE FOUND ${previousRelease.body.html_url}"
+                if (this.overwrite.get()) {
+                    deleteRelease(api, previousRelease)
+                    createRelease(api, ownerValue, repoValue, tagValue)
+                } else if (this.allowUploadToExisting.get() && (releaseAssets.size() > 0)) {
+                    log 'UPLOADING ASSETS TO EXISTING RELEASE'
+                    uploadAssetsToUrl api, previousRelease.body.upload_url as String
+                    if (!draft.get()) {
+                        api.patchReleaseAsPublished(previousRelease.body.url as String)
+                    }
+                } else if (previousRelease.body.draft as Boolean) {
+                    api.patchReleaseAsPublished(previousRelease.body.url as String)
+                } else {
+                    throw new Error(':githubRelease FAILED RELEASE ALREADY EXISTS')
+                }
+                break
+            case 404:
+                createRelease(api, ownerValue, repoValue, tagValue)
+                break
+            default:
+                throw new Error(":githubRelease FAILED $previousRelease.code $previousRelease.message\n$previousRelease.body")
         }
     }
 
