@@ -16,12 +16,8 @@
 
 package com.github.breadmoirai.githubreleaseplugin
 
-
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 class GithubReleasePlugin implements Plugin<Project> {
 
