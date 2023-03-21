@@ -16,11 +16,9 @@
 
 package com.github.breadmoirai.githubreleaseplugin
 
-import com.github.breadmoirai.githubreleaseplugin.GithubApi
 import com.github.breadmoirai.githubreleaseplugin.ast.ExtensionClass
 import com.github.breadmoirai.githubreleaseplugin.exceptions.PropertyNotSetException
 import groovy.transform.Memoized
-import okhttp3.OkHttpClient
 import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -45,7 +43,6 @@ class ChangeLogSupplier implements Callable<String> {
     final Property<String> currentCommit
     final Property<String> lastCommit
     final ListProperty<String> options
-    private final OkHttpClient client = GithubApi.client
 
     ChangeLogSupplier(Project project,
                       Provider<String> ownerProvider,
@@ -131,7 +128,6 @@ class ChangeLogSupplier implements Callable<String> {
             // if current release does not exist, then gets the most recent release
             Object lastRelease = releases.get(index + 1)
             String lastTag = lastRelease.tag_name
-            String tagUrl = "${GithubApi.endpoint}/repos/$owner/$repo/git/refs/tags/$lastTag"
             def previousRelease = api.findTagByName(owner, repo, lastTag)
             def commit = previousRelease.body.object.sha
             log("Found previous release with tag $lastTag at commit $commit")
