@@ -34,7 +34,7 @@ class GithubReleasePlugin implements Plugin<Project> {
 
         def ext = project.extensions.create('githubRelease', GithubReleaseExtension, project)
 
-        task = project.tasks.create('githubRelease', GithubReleaseTask) {
+        task = project.tasks.register('githubRelease', GithubReleaseTask) {
             it.with {
                 setAuthorization ext.authorizationProvider
                 setOwner ext.ownerProvider
