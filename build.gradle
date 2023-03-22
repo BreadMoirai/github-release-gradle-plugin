@@ -31,8 +31,6 @@ repositories {
 }
 
 dependencies {
-    implementation project(':ast')
-
     implementation gradleApi()
 
     implementation('com.squareup.okhttp3:okhttp:4.9.3') {
@@ -41,6 +39,8 @@ dependencies {
     }
     implementation group: 'org.apache.tika', name: 'tika-core', version: '2.0.0'
     implementation 'org.zeroturnaround:zt-exec:1.12'
+
+    testImplementation 'org.codehaus.groovy:groovy-test:3.0.9'
 
 //    compileOnly 'com.gradle.publish:plugin-publish-plugin:1.0.0-rc-1'
 
