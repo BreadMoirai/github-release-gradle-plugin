@@ -39,7 +39,7 @@ dependencies {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-common'
     }
-    implementation group: 'org.apache.tika', name: 'tika-core', version: '2.0.0'
+    implementation group: 'org.apache.tika', name: 'tika-core', version: '2.7.0'
     implementation 'org.zeroturnaround:zt-exec:1.12'
 
 //    compileOnly 'com.gradle.publish:plugin-publish-plugin:1.0.0-rc-1'
