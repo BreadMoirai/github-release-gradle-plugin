@@ -53,19 +53,15 @@ dependencies {
 }
 
 gradlePlugin {
+    website = 'https://github.com/BreadMoirai/github-release-gradle-plugin'
+    vcsUrl = 'https://github.com/BreadMoirai/github-release-gradle-plugin'
     plugins.create('github-release') {
         id = 'com.github.breadmoirai.github-release'
         implementationClass = 'com.github.breadmoirai.githubreleaseplugin.GithubReleasePlugin'
         displayName = 'Github Release Plugin'
         description = 'A Gradle Plugin to send Releases to Github '
-
+        tags.set(['github', 'release'])
     }
-}
-
-pluginBundle {
-    website = 'https://github.com/BreadMoirai/github-release-gradle-plugin'
-    vcsUrl = 'https://github.com/BreadMoirai/github-release-gradle-plugin'
-    tags = ['github', 'release']
 }
 
 shadowJar.archiveClassifier.set ''
