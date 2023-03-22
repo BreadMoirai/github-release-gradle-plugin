@@ -35,7 +35,7 @@ dependencies {
 
     implementation gradleApi()
 
-    implementation('com.squareup.okhttp3:okhttp:4.9.3') {
+    implementation('com.squareup.okhttp3:okhttp:4.10.0') {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-common'
     }
