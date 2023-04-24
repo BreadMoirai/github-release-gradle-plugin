@@ -96,20 +96,20 @@ import java.util.concurrent.Callable
 class GithubReleaseExtension {
 
 
-    final Property<CharSequence> owner
-    final Property<CharSequence> repo
-    final Property<CharSequence> authorization
-    final Property<CharSequence> tagName
-    final Property<CharSequence> targetCommitish
-    final Property<CharSequence> releaseName
+    final Property<String> owner
+    final Property<String> repo
+    final Property<String> authorization
+    final Property<String> tagName
+    final Property<String> targetCommitish
+    final Property<String> releaseName
     final Property<Boolean> generateReleaseNotes
-    final Property<CharSequence> body
+    final Property<String> body
     final Property<Boolean> draft
     final Property<Boolean> prerelease
     final Property<Boolean> overwrite
     final Property<Boolean> allowUploadToExisting
     final Property<Boolean> dryRun
-    final Property<CharSequence> apiEndpoint
+    final Property<String> apiEndpoint
 
     final ConfigurableFileCollection releaseAssets
 
@@ -122,25 +122,24 @@ class GithubReleaseExtension {
     GithubReleaseExtension(Project project) {
         this.project = project
         final ObjectFactory objectFactory = project.objects
-        owner = objectFactory.property(CharSequence)
-        repo = objectFactory.property(CharSequence)
-        authorization = objectFactory.property(CharSequence)
-        tagName = objectFactory.property(CharSequence)
-        targetCommitish = objectFactory.property(CharSequence)
-        releaseName = objectFactory.property(CharSequence)
+        owner = objectFactory.property(String)
+        repo = objectFactory.property(String)
+        authorization = objectFactory.property(String)
+        tagName = objectFactory.property(String)
+        targetCommitish = objectFactory.property(String)
+        releaseName = objectFactory.property(String)
         generateReleaseNotes = objectFactory.property(Boolean)
-        body = objectFactory.property(CharSequence)
+        body = objectFactory.property(String)
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
         releaseAssets = project.files()
         overwrite = objectFactory.property(Boolean)
         allowUploadToExisting = objectFactory.property(Boolean)
         dryRun = objectFactory.property(Boolean)
-        apiEndpoint = objectFactory.property(CharSequence)
+        apiEndpoint = objectFactory.property(String)
 
         owner {
-            def group = project.group.toString()
-            return group.substring(group.lastIndexOf('.') + 1)
+            return project.group.substring(project.group.lastIndexOf('.') + 1)
         }
         repo {
             project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
@@ -181,27 +180,27 @@ class GithubReleaseExtension {
         this.releaseAssets.setFrom(assets)
     }
 
-    void setToken(CharSequence token) {
+    void setToken(String token) {
         this.authorization.set("Token $token")
     }
 
-    void token(CharSequence token) {
+    void token(String token) {
         this.authorization.set("Token $token")
     }
 
-    void setToken(Provider<? extends CharSequence> token) {
+    void setToken(Provider<String> token) {
         this.authorization.set(token.map { "Token $it" })
     }
 
-    void token(Provider<? extends CharSequence> token) {
+    void token(Provider<String> token) {
         this.authorization.set(token.map { "Token $it" })
     }
 
-    void setToken(Callable<? extends CharSequence> token) {
+    void setToken(Callable<String> token) {
         this.authorization.set(project.provider(token).map { "Token $it" })
     }
 
-    void token(Callable<? extends CharSequence> token) {
+    void token(Callable<String> token) {
         this.authorization.set(project.provider(token).map { "Token $it" })
     }
 

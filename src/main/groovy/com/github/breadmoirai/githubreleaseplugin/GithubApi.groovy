@@ -32,9 +32,9 @@ class GithubApi {
     private final Map<String, String> defaultHeaders
     private final Tika tika = new Tika()
 
-    GithubApi(CharSequence authorization) {
+    GithubApi(String authorization) {
         this.defaultHeaders = [
-                'Authorization': authorization.toString(),
+                'Authorization': authorization,
                 'User-Agent'   : 'breadmoirai github-release-gradle-plugin',
                 'Accept'       : 'application/vnd.github.v3+json',
                 'Content-Type' : 'application/json'
@@ -72,14 +72,14 @@ class GithubApi {
         return r
     }
 
-    Response findReleaseByTag(CharSequence owner, CharSequence repo, CharSequence tagName) {
+    Response findReleaseByTag(String owner, String repo, String tagName) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases/tags/$tagName"
         connect(releaseUrl) {
             get()
         }
     }
 
-    Response findTagByName(CharSequence owner, CharSequence repo, CharSequence tagName) {
+    Response findTagByName(String owner, String repo, String tagName) {
         String tagUrl = "$endpoint/repos/$owner/$repo/git/refs/tags/$tagName"
         connect(tagUrl) {
             get()
@@ -98,7 +98,7 @@ class GithubApi {
         }
     }
 
-    Response postRelease(CharSequence owner, CharSequence repo, Map data) {
+    Response postRelease(String owner, String repo, Map data) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases"
         connect(releaseUrl) {
             post RequestBody.create(JsonOutput.toJson(data), MEDIATYPE_JSON)
@@ -111,14 +111,14 @@ class GithubApi {
         }
     }
 
-    Response getReleases(CharSequence owner, CharSequence repo) {
+    Response getReleases(String owner, String repo) {
         String releaseUrl = "$endpoint/repos/$owner/$repo/releases"
         connect(releaseUrl) {
             get()
         }
     }
 
-    Response getCommits(CharSequence owner, CharSequence repo) {
+    Response getCommits(String owner, String repo) {
         String commitsUrl = "$endpoint/repo/$owner/$repo/commits"
         println ':githubRelease RETRIEVING COMMITS ' + commitsUrl
         connect(commitsUrl) {

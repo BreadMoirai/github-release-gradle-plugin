@@ -33,21 +33,21 @@ import java.nio.charset.StandardCharsets
 class GithubReleaseTask extends DefaultTask {
 
     @Input
-    final Property<CharSequence> owner
+    final Property<String> owner
     @Input
-    final Property<CharSequence> repo
+    final Property<String> repo
     @Input
-    final Property<CharSequence> authorization
+    final Property<String> authorization
     @Input
-    final Property<CharSequence> tagName
+    final Property<String> tagName
     @Input
-    final Property<CharSequence> targetCommitish
+    final Property<String> targetCommitish
     @Input
-    final Property<CharSequence> releaseName
+    final Property<String> releaseName
     @Input
     final Property<Boolean> generateReleaseNotes
     @Input
-    final Property<CharSequence> body
+    final Property<String> body
     @Input
     final Property<Boolean> draft
     @Input
@@ -62,26 +62,26 @@ class GithubReleaseTask extends DefaultTask {
     @Input
     final Property<Boolean> dryRun
     @Input
-    final Property<CharSequence> apiEndpoint
+    final Property<String> apiEndpoint
 
     GithubReleaseTask() {
         this.setGroup('publishing')
         final ObjectFactory objectFactory = project.objects
-        owner = objectFactory.property(CharSequence)
-        repo = objectFactory.property(CharSequence)
-        authorization = objectFactory.property(CharSequence)
-        tagName = objectFactory.property(CharSequence)
-        targetCommitish = objectFactory.property(CharSequence)
-        releaseName = objectFactory.property(CharSequence)
+        owner = objectFactory.property(String)
+        repo = objectFactory.property(String)
+        authorization = objectFactory.property(String)
+        tagName = objectFactory.property(String)
+        targetCommitish = objectFactory.property(String)
+        releaseName = objectFactory.property(String)
         generateReleaseNotes = objectFactory.property(Boolean)
-        body = objectFactory.property(CharSequence)
+        body = objectFactory.property(String)
         draft = objectFactory.property(Boolean)
         prerelease = objectFactory.property(Boolean)
         releaseAssets = project.files()
         overwrite = objectFactory.property(Boolean)
         allowUploadToExisting = objectFactory.property(Boolean)
         dryRun = objectFactory.property(Boolean)
-        apiEndpoint = objectFactory.property(CharSequence)
+        apiEndpoint = objectFactory.property(String)
     }
 
     private void log(String message) {
@@ -102,11 +102,11 @@ class GithubReleaseTask extends DefaultTask {
                 log "This task is a dry run. All API calls that would modify the repo are disabled. API calls that access the repo information are not disabled. Use this to show what actions would be executed."
             }
             GithubApi.endpoint = apiEndpoint.get()
-            final CharSequence authValue = authorization.get()
+            final String authValue = authorization.get()
             final GithubApi api = new GithubApi(authValue)
-            final CharSequence ownerValue = owner.get()
-            final CharSequence repoValue = repo.get()
-            final CharSequence tagValue = tagName.get()
+            final String ownerValue = owner.get()
+            final String repoValue = repo.get()
+            final String tagValue = tagName.get()
             log 'CHECKING FOR PREVIOUS RELEASE'
             def previousRelease = api.findReleaseByTag ownerValue, repoValue, tagValue
             switch (previousRelease.code) {
@@ -155,7 +155,7 @@ class GithubReleaseTask extends DefaultTask {
         }
     }
 
-    private void createRelease(GithubApi api, CharSequence ownerValue, CharSequence repoValue, CharSequence tagValue) {
+    private void createRelease(GithubApi api, String ownerValue, String repoValue, String tagValue) {
 
         def values = [
                 tag_name              : tagValue,
