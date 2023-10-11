@@ -1,6 +1,11 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.4.1-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.4.1)
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.5.0-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.5.0)
 
+[p63]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/63
+[p62]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/62
+[p61]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/61
+[p60]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/60
+[i51]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/53
 [i51]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/51
 [p42]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/42
 [p41]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/41
@@ -37,6 +42,10 @@ If you are using multiple GithubRelease tasks to compose a single release, the r
 Some version numbers are skipped because of issues with the gradle plugin portal.
 
 ## Changelog
+2.5.0
+- Merged [#60][p60], [#61][p61], [#62][p62], [#63][p63] (Thanks for contributing!)
+- Uses of CharSequence have been replaced with String 
+
 2.4.1
 - Add support for GitHub generated release notes with `generateReleaseNotes: true`. If a name is not provided one will be generated. If a body is provided it will be pre-pended to the auto generated notes. Fixes [#51][i51].
 
