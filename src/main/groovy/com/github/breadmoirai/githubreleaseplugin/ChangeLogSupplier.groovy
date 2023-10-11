@@ -35,23 +35,23 @@ class ChangeLogSupplier implements Callable<String> {
 
     private final Project project
 
-    private final Provider<CharSequence> owner
-    private final Provider<CharSequence> repo
-    private final Provider<CharSequence> authorization
-    private final Provider<CharSequence> tag
+    private final Provider<String> owner
+    private final Provider<String> repo
+    private final Provider<String> authorization
+    private final Provider<String> tag
     private final Provider<Boolean> dryRun
 
-    final Property<CharSequence> executable
-    final Property<CharSequence> currentCommit
-    final Property<CharSequence> lastCommit
-    final ListProperty<CharSequence> options
+    final Property<String> executable
+    final Property<String> currentCommit
+    final Property<String> lastCommit
+    final ListProperty<String> options
     private final OkHttpClient client = GithubApi.client
 
     ChangeLogSupplier(Project project,
-                      Provider<CharSequence> ownerProvider,
-                      Provider<CharSequence> repoProvider,
-                      Provider<CharSequence> authorizationProvider,
-                      Provider<CharSequence> tagProvider,
+                      Provider<String> ownerProvider,
+                      Provider<String> repoProvider,
+                      Provider<String> authorizationProvider,
+                      Provider<String> tagProvider,
                       Provider<Boolean> dryRunProvider) {
         this.project = project
         def objects = project.objects
@@ -60,10 +60,10 @@ class ChangeLogSupplier implements Callable<String> {
         this.authorization = authorizationProvider
         this.tag = tagProvider
         this.dryRun = dryRunProvider
-        this.executable = objects.property(CharSequence)
-        this.currentCommit = objects.property(CharSequence)
-        this.lastCommit = objects.property(CharSequence)
-        this.options = objects.listProperty(CharSequence)
+        this.executable = objects.property(String)
+        this.currentCommit = objects.property(String)
+        this.lastCommit = objects.property(String)
+        this.options = objects.listProperty(String)
         setExecutable 'git'
         setCurrentCommit "HEAD"
         setLastCommit { this.getLastReleaseCommit() }
@@ -74,21 +74,21 @@ class ChangeLogSupplier implements Callable<String> {
      * Looks for the previous release's targetCommitish
      * @return
      */
-    private CharSequence getLastReleaseCommit() {
+    private String getLastReleaseCommit() {
         log 'Searching for previous release on Github'
-        CharSequence owner = this.owner.getOrNull()
+        String owner = this.owner.getOrNull()
         if (owner == null) {
             throw new PropertyNotSetException("owner")
         }
-        CharSequence repo = this.repo.getOrNull()
+        String repo = this.repo.getOrNull()
         if (repo == null) {
             throw new PropertyNotSetException("repo")
         }
-        CharSequence auth = authorization.getOrNull()
+        String auth = authorization.getOrNull()
         if (auth == null) {
             throw new PropertyNotSetException("auth")
         }
-        CharSequence tag = this.tag.getOrNull()
+        String tag = this.tag.getOrNull()
         if (tag == null) {
             throw new PropertyNotSetException("tag")
         }
@@ -109,13 +109,13 @@ class ChangeLogSupplier implements Callable<String> {
             log "$i : ${releases[i].tag_name}"
         }
         if (releases.isEmpty() || (releases.size() == 1 && index == 0) || index + 1 == releases.size()) {
-            CharSequence exe = this.executable.getOrNull()
+            String exe = this.executable.getOrNull()
             if (exe == null) {
                 throw new PropertyNotSetException("exe")
             }
             log "Previous release not found"
             log "Searching for earliest commit"
-            List<String> cmd = [exe, "rev-list", "--max-parents=0", "--max-count=1", "HEAD"]*.toString()
+            List<String> cmd = [exe, "rev-list", "--max-parents=0", "--max-count=1", "HEAD"]
             log "Running `${cmd.join(' ')}`"
             def result = new ProcessExecutor()
                     .command(cmd)
@@ -145,10 +145,10 @@ class ChangeLogSupplier implements Callable<String> {
     @Memoized
     String call() {
         log 'Creating...'
-        CharSequence current = currentCommit.get()
-        CharSequence last = lastCommit.get()
-        List<String> opts = options.get()*.toString()
-        CharSequence get = executable.getOrNull()
+        String current = currentCommit.get()
+        String last = lastCommit.get()
+        List<String> opts = options.get()
+        String get = executable.getOrNull()
         if (get == null) {
             throw new PropertyNotSetException('get')
         }
@@ -185,7 +185,7 @@ class ChangeLogSupplier implements Callable<String> {
         this.options.set(options.toList())
     }
 
-    public void setOptions(Iterable<? extends CharSequence> options) {
+    public void setOptions(Iterable<String> options) {
         this.options.set options
     }
 
@@ -193,11 +193,11 @@ class ChangeLogSupplier implements Callable<String> {
         this.options.set(options.toList())
     }
 
-    public void options(Iterable<? extends CharSequence> options) {
+    public void options(Iterable<String> options) {
         this.options.set options
     }
 
-    public void addOption(CharSequence option) {
+    public void addOption(String option) {
         this.options.add(option)
     }
 

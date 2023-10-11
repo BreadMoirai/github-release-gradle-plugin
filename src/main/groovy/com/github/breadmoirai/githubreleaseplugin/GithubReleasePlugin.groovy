@@ -25,16 +25,11 @@ import org.slf4j.LoggerFactory
 
 class GithubReleasePlugin implements Plugin<Project> {
 
-    private Project project
-    private GithubReleaseTask task
-
     @Override
     void apply(Project project) {
-        this.project = project
-
         def ext = project.extensions.create('githubRelease', GithubReleaseExtension, project)
 
-        task = project.tasks.create('githubRelease', GithubReleaseTask) {
+        project.tasks.register('githubRelease', GithubReleaseTask) {
             it.with {
                 setAuthorization ext.authorizationProvider
                 setOwner ext.ownerProvider
@@ -52,7 +47,7 @@ class GithubReleasePlugin implements Plugin<Project> {
                 setDryRun ext.dryRunProvider
                 setApiEndpoint ext.apiEndpointProvider
             }
-        } as GithubReleaseTask
+        }
     }
 
 }
