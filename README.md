@@ -1,5 +1,5 @@
 # github-release
-[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.5.0-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.5.0)
+[![Gradle Plugin Portal](https://img.shields.io/badge/version-2.5.1-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.5.1)
 
 [p63]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/63
 [p62]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/62
@@ -42,7 +42,10 @@ If you are using multiple GithubRelease tasks to compose a single release, the r
 Some version numbers are skipped because of issues with the gradle plugin portal.
 
 ## Changelog
-2.5.0
+2.5.1
+- Fixed classpath [error](https://github.com/BreadMoirai/github-release-gradle-plugin/pull/62#discussion_r1354355485)
+
+2.5
 - Merged [#60][p60], [#61][p61], [#62][p62], [#63][p63] (Thanks for contributing!)
 - Uses of CharSequence have been replaced with String 
 

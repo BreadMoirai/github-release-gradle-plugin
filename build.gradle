@@ -22,7 +22,7 @@ plugins {
 }
 
 group = 'com.github.breadmoirai'
-version = '2.5'
+version = '2.5.1'
 
 repositories {
     mavenCentral()
@@ -58,7 +58,7 @@ validatePlugins {
 }
 
 tasks.register('createPluginClasspath') {
-    def outputDir = file("${layout.buildDirectory}/resources/test")
+    def outputDir = file(layout.buildDirectory.dir("resources/test"))
 
     inputs.files sourceSets.test.runtimeClasspath
     outputs.dir outputDir
