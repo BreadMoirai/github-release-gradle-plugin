@@ -31,21 +31,21 @@ class GithubReleasePlugin implements Plugin<Project> {
 
         project.tasks.register('githubRelease', GithubReleaseTask) {
             it.with {
-                setAuthorization ext.authorizationProvider
-                setOwner ext.ownerProvider
-                setRepo ext.repoProvider
-                setTagName ext.tagNameProvider
-                setTargetCommitish ext.targetCommitishProvider
-                setReleaseName ext.releaseNameProvider
-                setGenerateReleaseNotes ext.generateReleaseNotesProvider
-                setBody ext.bodyProvider
-                setDraft ext.draftProvider
-                setPrerelease ext.prereleaseProvider
-                setReleaseAssets ext.releaseAssets
-                setOverwrite ext.overwriteProvider
-                setAllowUploadToExisting ext.allowUploadToExistingProvider
-                setDryRun ext.dryRunProvider
-                setApiEndpoint ext.apiEndpointProvider
+                authorization.convention(ext.authorization)
+                it.owner.convention(ext.owner)
+                repo.convention(ext.repo)
+                tagName.convention(ext.tagName)
+                targetCommitish.convention(ext.targetCommitish)
+                releaseName.convention(ext.releaseName)
+                generateReleaseNotes.convention(ext.generateReleaseNotes)
+                body.convention(ext.body)
+                draft.convention(ext.draft)
+                prerelease.convention(ext.prerelease)
+                releaseAssets.setFrom(ext.releaseAssets)
+                overwrite.convention(ext.overwrite)
+                allowUploadToExisting.convention(ext.allowUploadToExisting)
+                dryRun.convention(ext.dryRun)
+                apiEndpoint.convention(ext.apiEndpoint)
             }
         }
     }
