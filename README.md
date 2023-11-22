@@ -1,11 +1,14 @@
 # github-release
 [![Gradle Plugin Portal](https://img.shields.io/badge/version-2.5.1-blue.svg)](https://plugins.gradle.org/plugin/com.github.breadmoirai.github-release/2.5.1)
 
+
+[p65]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/65
 [p63]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/63
 [p62]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/62
 [p61]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/61
 [p60]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/60
-[i51]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/53
+[i64]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/64
+[i53]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/53
 [i51]: https://github.com/BreadMoirai/github-release-gradle-plugin/issues/51
 [p42]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/42
 [p41]: https://github.com/BreadMoirai/github-release-gradle-plugin/pull/41
@@ -42,6 +45,9 @@ If you are using multiple GithubRelease tasks to compose a single release, the r
 Some version numbers are skipped because of issues with the gradle plugin portal.
 
 ## Changelog
+2.5.2
+- Merged [#65][p65] fixing Issue [#64][i64]
+
 2.5.1
 - Fixed classpath [error](https://github.com/BreadMoirai/github-release-gradle-plugin/pull/62#discussion_r1354355485)
 

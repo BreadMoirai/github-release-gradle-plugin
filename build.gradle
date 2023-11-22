@@ -20,7 +20,7 @@ plugins {
 }
 
 group = 'com.github.breadmoirai'
-version = '2.5.1'
+version = '2.5.2'
 
 repositories {
     mavenCentral()
