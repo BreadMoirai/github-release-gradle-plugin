@@ -138,24 +138,24 @@ class GithubReleaseExtension {
         dryRun = objectFactory.property(Boolean)
         apiEndpoint = objectFactory.property(String)
 
-        owner {
-            return project.group.substring(project.group.lastIndexOf('.') + 1)
-        }
-        repo {
+        owner.convention(project.providers.provider {
+            project.group.substring(project.group.lastIndexOf('.') + 1)
+        })
+        repo.convention(project.providers.provider {
             project.name ?: project.rootProject?.name ?: project.rootProject?.rootProject?.name
-        }
-        tagName { "v${project.version}" }
-        targetCommitish { 'main' }
-        releaseName { "v${project.version}" }
-        draft { false }
-        prerelease { false }
+        })
+        tagName.convention(project.providers.provider { "v${project.version}" })
+        targetCommitish.convention("main")
+        releaseName.convention(project.providers.provider { "v${project.version}" })
+        draft.convention(false)
+        prerelease.convention(false)
         // authorization has no default value
-        generateReleaseNotes { false }
-        body { "" }
-        overwrite { false }
-        allowUploadToExisting { false }
-        apiEndpoint { GithubApi.endpoint }
-        dryRun { false }
+        generateReleaseNotes.convention(false)
+        body.convention("")
+        overwrite.convention(false)
+        allowUploadToExisting.convention(false)
+        apiEndpoint.convention(GithubApi.endpoint)
+        dryRun.convention(false)
         changeLogSupplier = new ChangeLogSupplier(project, owner, repo, authorization, tagName, dryRun)
     }
 

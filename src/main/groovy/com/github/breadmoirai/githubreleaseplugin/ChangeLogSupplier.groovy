@@ -64,10 +64,11 @@ class ChangeLogSupplier implements Callable<String> {
         this.currentCommit = objects.property(String)
         this.lastCommit = objects.property(String)
         this.options = objects.listProperty(String)
-        setExecutable 'git'
-        setCurrentCommit "HEAD"
-        setLastCommit { this.getLastReleaseCommit() }
-        setOptions("--format=oneline", "--abbrev-commit", "--max-count=50")
+
+        executable.convention("git")
+        currentCommit.convention("HEAD")
+        lastCommit.convention(project.providers.provider { this.getLastReleaseCommit() })
+        options.convention(["--format=oneline", "--abbrev-commit", "--max-count=50"])
     }
 
     /**
